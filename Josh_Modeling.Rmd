@@ -1,0 +1,140 @@
+---
+title: "Josh_Modeling"
+output: html_document
+---
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(lme4)
+
+final_county <- read_csv("~/jvstats/final_county.csv")
+final_county <- final_county %>%
+  mutate(percent_citizen = `Citizen: US Born`/POPULATION, percent_citizen_abroad = `Citizen: Born Abroad`/POPULATION, percent_citizen_naturalized = `Citizen: Naturalization`/POPULATION, percent_citizen_Puerto = `Citizen: Puerto Rico/US Islands Born`/POPULATION, percent_citizen_not = `Not Citizen`/POPULATION, percent_black = BLACK/POPULATION, percent_white = WHITE/POPULATION, percent_indian =INDIAN/POPULATION, percent_asian = ASIAN/POPULATION, percent_hawaiian = HAWAIIAN/POPULATION)
+
+final_county <- final_county %>%
+  mutate(percent_citizen = `Citizen: US Born`/POPULATION, percent_citizen_abroad = `Citizen: Born Abroad`/POPULATION, percent_citizen_naturalized = `Citizen: Naturalization`/POPULATION, percent_citizen_Puerto = `Citizen: Puerto Rico/US Islands Born`/POPULATION, percent_citizen_not = `Not Citizen`/POPULATION, percent_black = BLACK/POPULATION, percent_white = WHITE/POPULATION, percent_indian =INDIAN/POPULATION, percent_asian = ASIAN/POPULATION, percent_hawaiian = HAWAIIAN/POPULATION, percent_female = TOTALFEMALE/POPULATION)
+final_county2010<- final_county %>%
+  filter(YEAR ==2010 | YEAR == 2014)
+
+
+ggplot(final_county, aes(x=weight)) + 
+  geom_histogram(color="black", fill="white")
+```
+
+```{r}
+
+
+model.a <- lmer(VOTEPERCENT ~ YEAR+
+  (1|CTYNAME), REML=T, data=final_county[final_county$MIDTERM==1,])
+summary(model.a)
+
+model.a <- lmer(VOTEPERCENT ~ `BACHELOR'S DEGREE >25` + `HIGHSCHOOL DEGREE`+AGE2024_TOTAL + AGE2529_TOTAL+ EMPLOY.HC04_EST_VC01+INCOME.HC01_EST_VC13+INCOME.HC01_EST_VC02 + percent_white+percent_citizen+SOCIALCAP.assn2014+
+  (1|CTYNAME), REML=T, data=final_county[final_county$MIDTERM==1,])
+summary(model.a)
+
+model.a <- lmer(VOTEPERCENT ~ `BACHELOR'S DEGREE >25`+AGE2024_TOTAL +INCOME.HC01_EST_VC13 + YEAR+
+  (1|CTYNAME), REML=T, data=final_county2010[final_county2010$MIDTERM==1,])
+summary(model.a)
+
+model.d <- lmer(VOTEPERCENT~`OCC.PublicAdmin` +`OCC.Professional`+`OCC.Education`+`OCC.Information`+
+`OCC.Finance` + `OCC.Manufacturing`+
+  (1|CTYNAME), REML=T, data=final_county2010[final_county2010$MIDTERM==1,])
+summary(model.d)
+
+model.e <- lmer(VOTEPERCENT~`AGE2024_TOTAL`+`AGE2024_MALE`+`AGE2024_FEMALE`+`AGE2529_TOTAL`+`AGE2529_MALE`+
+  (1|CTYNAME), REML=T, data=final_county2010[final_county2010$MIDTERM==1,])
+summary(model.e)
+
+
+model.f <- lmer(VOTEPERCENT ~ `BACHELOR'S DEGREE` + `HIGHSCHOOL DEGREE`+AGE2024_TOTAL + AGE2529_TOTAL+ EMPLOY.HC04_EST_VC01+INCOME.HC01_EST_VC13+INCOME.HC01_EST_VC02 +`OCC.PublicAdmin` +`OCC.Professional`+`OCC.Education`+`OCC.Information`+
+`OCC.Finance` + `OCC.Manufacturing`+ `AGE2024_TOTAL`+`AGE2529_TOTAL`+percent_white+percent_citizen+SOCIALCAP.assn2014+
+  (1|CTYNAME), REML=T, data=final_county2010[final_county2010$MIDTERM==1,])
+summary(model.f)
+
+model.h <- lmer(VOTEPERCENT ~  `HIGHSCHOOL DEGREE` + AGE2529_TOTAL+ EMPLOY.HC04_EST_VC01+INCOME.HC01_EST_VC13+INCOME.HC01_EST_VC02 +`OCC.PublicAdmin` +`OCC.Professional`+`OCC.Education`+`OCC.Information` + `AGE2024_TOTAL`+`AGE2529_TOTAL`+SOCIALCAP.assn2014+
+  (1|CTYNAME), REML=T, data=final_county2010[final_county2010$MIDTERM==1,])
+summary(model.h)
+
+
+```
+
+```{r}
+model.a <- lmer(VOTEPERCENT ~ `BACHELOR'S DEGREE` + `HIGHSCHOOL DEGREE`+AGE2024_TOTAL + AGE2529_TOTAL+ EMPLOY.HC04_EST_VC01+INCOME.HC01_EST_VC13+INCOME.HC01_EST_VC02 +`OCC.PublicAdmin` +`OCC.Professional`+`OCC.Education`+`OCC.Information`+
+`OCC.Finance` + `OCC.Manufacturing`+ `AGE2024_TOTAL`+`AGE2529_TOTAL`+percent_white+percent_citizen+SOCIALCAP.assn2014+
+  (1|CTYNAME), REML=T, data=final_county2010[final_county2010$MIDTERM==1,])
+summary(model.f)
+
+model.b <- lmer(VOTEPERCENT ~ `BACHELOR'S DEGREE` + `HIGHSCHOOL DEGREE`+AGE2024_TOTAL + AGE2529_TOTAL+ EMPLOY.HC04_EST_VC01+INCOME.HC01_EST_VC13+INCOME.HC01_EST_VC02 +`OCC.PublicAdmin` +`OCC.Professional`+`OCC.Education`+`OCC.Information`+
+`OCC.Finance` + `OCC.Manufacturing`+ `AGE2024_TOTAL`+`AGE2529_TOTAL`+percent_white+SOCIALCAP.assn2014+
+  (1|CTYNAME), REML=T, data=final_county2010[final_county2010$MIDTERM==1,])
+summary(model.b)
+
+model.c <- lmer(VOTEPERCENT ~ `BACHELOR'S DEGREE` + `HIGHSCHOOL DEGREE`+AGE2024_TOTAL + AGE2529_TOTAL+ EMPLOY.HC04_EST_VC01+INCOME.HC01_EST_VC13+INCOME.HC01_EST_VC02 +`OCC.PublicAdmin` +`OCC.Professional`+`OCC.Information`+
+`OCC.Finance` + `OCC.Manufacturing`+ `AGE2024_TOTAL`+`AGE2529_TOTAL`+percent_white+SOCIALCAP.assn2014+
+  (1|CTYNAME), REML=T, data=final_county2010[final_county2010$MIDTERM==1,])
+summary(model.c)
+
+model.d <- lmer(VOTEPERCENT ~ `BACHELOR'S DEGREE` + `HIGHSCHOOL DEGREE`+AGE2024_TOTAL + AGE2529_TOTAL+ EMPLOY.HC04_EST_VC01+INCOME.HC01_EST_VC13+INCOME.HC01_EST_VC02 +`OCC.PublicAdmin` +`OCC.Professional`+`OCC.Information`+`OCC.Finance` + `AGE2024_TOTAL`+`AGE2529_TOTAL`+percent_white+SOCIALCAP.assn2014+
+  (1|CTYNAME), REML=T, data=final_county2010[final_county2010$MIDTERM==1,])
+summary(model.d)
+
+model.e <- lmer(VOTEPERCENT ~ `BACHELOR'S DEGREE` + `HIGHSCHOOL DEGREE`+AGE2024_TOTAL + AGE2529_TOTAL+ EMPLOY.HC04_EST_VC01+INCOME.HC01_EST_VC13+INCOME.HC01_EST_VC02 +`OCC.PublicAdmin` +`OCC.Professional`+`OCC.Information`+
+`OCC.Finance` + `AGE2024_TOTAL`+`AGE2529_TOTAL`+SOCIALCAP.assn2014+
+  (1|CTYNAME), REML=T, data=final_county2010[final_county2010$MIDTERM==1,])
+summary(model.e)
+
+
+model.e1 <- lmer(VOTEPERCENT ~ `BACHELOR'S DEGREE` + `HIGHSCHOOL DEGREE`+AGE2024_TOTAL + AGE2529_TOTAL+ EMPLOY.HC04_EST_VC01+INCOME.HC01_EST_VC13 +`OCC.PublicAdmin` +`OCC.Professional`+`OCC.Information`+
+`OCC.Finance` + `AGE2024_TOTAL`+`AGE2529_TOTAL`+SOCIALCAP.assn2014+
+  (1|CTYNAME), REML=T, data=final_county2010[final_county2010$MIDTERM==1,])
+summary(model.e1)
+
+model.e2 <- lmer(VOTEPERCENT ~ `BACHELOR'S DEGREE` + `HIGHSCHOOL DEGREE`+AGE2024_TOTAL + AGE2529_TOTAL+ EMPLOY.HC04_EST_VC01+INCOME.HC01_EST_VC13 + percent_white +INCOME.HC01_EST_VC13:percent_white  +`OCC.PublicAdmin` +`OCC.Professional`+`OCC.Information`+
+`OCC.Finance` + `AGE2024_TOTAL`+`AGE2529_TOTAL`+SOCIALCAP.assn2014+
+  (1|CTYNAME), REML=T, data=final_county2010[final_county2010$MIDTERM==1,])
+summary(model.e2)
+
+#####
+#Final Model
+####
+
+model.e3 <- lmer(VOTEPERCENT ~ `BACHELOR'S DEGREE` +AGE2024_TOTAL + AGE2529_TOTAL+ EMPLOY.HC04_EST_VC01+INCOME.HC01_EST_VC13 + percent_white +INCOME.HC01_EST_VC02+INCOME.HC01_EST_VC13:percent_white  +`OCC.PublicAdmin` +`OCC.Professional`+`OCC.Information`+
+`OCC.Finance` + `AGE2024_TOTAL`+`AGE2529_TOTAL`+SOCIALCAP.assn2014+ percent_female+percent_white+
+  (1|CTYNAME), REML=T, data=final_county2010[final_county2010$MIDTERM==1,])
+summary(model.e3)
+
+AIC(model.e3)
+
+
+#######
+
+
+model.f <- lmer(VOTEPERCENT ~ `HIGHSCHOOL DEGREE`+AGE2024_TOTAL + AGE2529_TOTAL+ EMPLOY.HC04_EST_VC01+`INCOME.HC01_EST_VC13`+INCOME.HC01_EST_VC02 +`OCC.PublicAdmin` +`OCC.Professional`+`OCC.Information`+
+`OCC.Finance` + `AGE2024_TOTAL`+`AGE2529_TOTAL`+SOCIALCAP.assn2014+
+  (1|CTYNAME), REML=T, data=final_county2010[final_county2010$MIDTERM==1,])
+summary(model.f)
+
+model.f1 <- lmer(VOTEPERCENT ~ `HIGHSCHOOL DEGREE`+AGE2024_TOTAL + AGE2529_TOTAL+ EMPLOY.HC04_EST_VC01+INCOME.HC01_EST_VC13 +`OCC.PublicAdmin` +`OCC.Professional`+`OCC.Information`+
+`OCC.Finance` + `AGE2024_TOTAL`+`AGE2529_TOTAL`+SOCIALCAP.assn2014+
+  (1|CTYNAME), REML=T, data=final_county2010[final_county2010$MIDTERM==1,])
+summary(model.f1)
+
+#VC13 is median income
+#VC02 is poverty (less than 10000$)
+#EMPLOY is unemployment rate
+
+```
+
+
+Example Code
+```{r}
+d = data.frame(x = rep(1:10, times = 3),
+               y = NA,
+               grp = rep(1:3, each = 10))
+newdata = data.frame(x = 1:10, grp = 4)
+
+fit = lmer(y ~ x + (x|grp), data = d)
+predict(fit, newdata = newdata, allow.new.levels = TRUE)
+```

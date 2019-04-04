@@ -1,0 +1,101 @@
+---
+title: "Josh_Final_EDA"
+output: html_document
+---
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(lme4)
+#unemployment <- read_csv("~/jvstats/MYKHE/unemployment.csv")
+
+#citizen <- read_csv("~/jvstats/MYKHE/citizen.csv")
+#race <- read_csv("~/jvstats/MYKHE/race.csv")
+#education <- read_csv("~/jvstats/MYKHE/education.csv")
+#marraige <- read_csv("~/jvstats/MYKHE/marraige.csv")
+
+final_county <- read_csv("~/jvstats/final_county.csv")
+
+
+
+
+final_county <- final_county %>%
+  mutate(percent_citizen = `Citizen: US Born`/POPULATION, percent_citizen_abroad = `Citizen: Born Abroad`/POPULATION, percent_citizen_naturalized = `Citizen: Naturalization`/POPULATION, percent_citizen_Puerto = `Citizen: Puerto Rico/US Islands Born`/POPULATION, percent_citizen_not = `Not Citizen`/POPULATION, percent_black = BLACK/POPULATION, percent_white = WHITE/POPULATION, percent_indian =INDIAN/POPULATION, percent_asian = ASIAN/POPULATION, percent_hawaiian = HAWAIIAN/POPULATION)
+
+final_county2010<- final_county %>%
+  filter(YEAR ==2010 | YEAR == 2014)
+
+
+```
+
+Percent Changes
+- We see that there a difference between whether a year is a midterm or not. But we also see that the percentage of U.S. born citizen's is not significant with vote percentage in the midterm years. 
+```{r}
+ggplot(final_county, aes(x=percent_citizen, y=VOTEPERCENT, color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)+ xlab("Percent of U.S. Born Citizens") + ylab("Percent Voter Turnout") +labs(color = "Miderm Year")
+```
+
+
+We see that there is a slight increase in voter turnout when the white population increases. However, we can also see the clump on the right side of the graph, showing that Minnesota is very homogeneous. When we look at the graph that creates the indicator variable for the counties with White Population >95%, we see that the high white areas have slightly higher voter turnout as the income increases.
+```{r}
+ggplot(final_county, aes(x=percent_white, y=VOTEPERCENT, color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)+ xlab("Percent of White Population by County") + ylab("Percent Voter Turnout") +labs(color = "Miderm Year")
+#quantile(final_county$percent_white, probs = seq(0, 1, 0.25), na.rm = TRUE)
+final_county <- final_county %>%
+  mutate(highwhite = ifelse(percent_white >0.95, 1, 0))
+
+#ggplot(final_county[final_county$MIDTERM==1,], aes(x=as.factor(highwhite), y=VOTEPERCENT)) + 
+#  geom_boxplot()
+
+final_county_income <- final_county[!is.na(final_county$INCOME.HC01_EST_VC13), ]
+
+ggplot(final_county_income[final_county_income$MIDTERM==1,], aes(x=INCOME.HC01_EST_VC13, y=VOTEPERCENT, color=as.factor(highwhite))) +geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE) +xlab("Median Household Income in Dollars") + ylab("Percent Voter Turnout") +labs(color = "White Population is over 95%")
+
+```
+
+We considered agriculure and found it a not significant occupation when relating to percent voter turnout. However, we clearly see the positive trend between the percent of employed people doing finance and percent voter turnout. 
+```{r}
+final_county <- final_county %>%
+  mutate(Mid = ifelse(MIDTERM == 1, "Midterm Election", "Presidential Election"))
+ggplot(data=final_county, aes(x=`OCC.Agriculture`, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~Mid) + xlab("Agriculture")+xlab("Percent Employed Population 16 Years and Older Doing Agriculture") + ylab("Percent Voter Turnout")+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+summary(lm(VOTEPERCENT~as.numeric(`OCC.Agriculture`), data=subset(final_county,MIDTERM==1)))
+
+ggplot(data=final_county, aes(x=`OCC.Finance`, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~Mid) + xlab("Finance")+xlab("Percent Employed Population 16 Years and Older Doing Finance") + ylab("Percent Voter Turnout")+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+
+summary(lm(VOTEPERCENT~as.numeric(`OCC.Agriculture`), data=subset(final_county,MIDTERM==1)))
+
+```
+
+
+```{r}
+ggplot(data=final_county, aes(x=`OCC.Transportation`, y=VOTEPERCENT, color=as.factor(CTYNAME))) +geom_point() + facet_wrap(~YEAR) +xlab("transportation")
+ggplot(data=final_county, aes(x=`OCC.Transportation`, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("transportation")
+
+summary(lm(VOTEPERCENT~OCC.Transportation, data = final_county))
+summary(lm(VOTEPERCENT~OCC.Transportation, data=subset(final_county,MIDTERM==1)))
+
+```
+
+```{r}
+ggplot(data=final_county, aes(x=`OCC.WholesaleTrade`, y=VOTEPERCENT, color=as.factor(CTYNAME))) +geom_point() + facet_wrap(~YEAR) +xlab("transportation")
+ggplot(data=final_county, aes(x=`OCC.WholesaleTrade`, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("transportation")
+
+summary(lm(VOTEPERCENT~OCC.WholesaleTrade, data = final_county))
+summary(lm(VOTEPERCENT~OCC.WholesaleTrade, data=subset(final_county,MIDTERM==1)))
+
+```
+
+
+
+```{r}
+model.e3 <- lmer(VOTEPERCENT ~ `BACHELOR'S DEGREE` +AGE2024_TOTAL + AGE2529_TOTAL+ EMPLOY.HC04_EST_VC01+INCOME.HC01_EST_VC13 + percent_white +INCOME.HC01_EST_VC02+INCOME.HC01_EST_VC13:percent_white  +`OCC.PublicAdmin` +`OCC.Professional`+`OCC.Information`+
+`OCC.Finance` + `AGE2024_TOTAL`+`AGE2529_TOTAL`+SOCIALCAP.assn2014+ percent_female+percent_white+
+  (1|CTYNAME), REML=T, data=final_county2010[final_county2010$MIDTERM==1,])
+summary(model.e3)
+```

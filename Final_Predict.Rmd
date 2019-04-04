@@ -1,0 +1,104 @@
+---
+title: "Final_Predict"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(lme4)
+
+
+final_county <- read_csv("~/jvstats/final_county.csv")
+
+current_data <- read_csv("~/jvstats/current_data_2.csv")
+current_data3<-read_csv("~/jvstats/curret_data_3.csv")
+
+final_county <- final_county %>%
+  mutate(percent_citizen = `Citizen: US Born`/POPULATION, percent_citizen_abroad = `Citizen: Born Abroad`/POPULATION, percent_citizen_naturalized = `Citizen: Naturalization`/POPULATION, percent_citizen_Puerto = `Citizen: Puerto Rico/US Islands Born`/POPULATION, percent_citizen_not = `Not Citizen`/POPULATION, percent_black = BLACK/POPULATION, percent_white = WHITE/POPULATION, percent_indian =INDIAN/POPULATION, percent_asian = ASIAN/POPULATION, percent_hawaiian = HAWAIIAN/POPULATION, median_income1000 = INCOME.HC01_EST_VC13/1000, percent_female = TOTALFEMALE/POPULATION)
+
+current_data <- current_data %>%
+  mutate(median_income1000 = INCOME.HC01_EST_VC13/1000)
+
+social_captial <- final_county %>%
+  filter(YEAR ==2014) %>%
+  dplyr::select(`CTYNAME`, `SOCIALCAP.assn2014`)
+  
+
+
+final_county2010<- final_county %>%
+  filter(YEAR ==2010 | YEAR == 2014)
+
+current_data <- merge(current_data, current_data3, by =c("CTYNAME"))
+```
+
+```{r}
+
+model.e3 <- lmer(VOTEPERCENT ~ `BACHELOR'S DEGREE` +AGE2024_TOTAL + AGE2529_TOTAL+ EMPLOY.HC04_EST_VC01+median_income1000 + percent_white +INCOME.HC01_EST_VC02+median_income1000:percent_white  +`OCC.PublicAdmin` +`OCC.Professional`+`OCC.Information`+
+`OCC.Finance` + `AGE2024_TOTAL`+`AGE2529_TOTAL`+SOCIALCAP.assn2014+ percent_female+percent_white+
+  (1|CTYNAME), REML=T, data=final_county2010[final_county2010$MIDTERM==1,])
+summary(model.e3)
+```
+
+Example Code
+```{r}
+d = data.frame(x = rep(1:10, times = 3),
+               y = NA,
+               grp = rep(1:3, each = 10))
+newdata = data.frame(x = 1:10, grp = 4)
+
+fit = lmer(y ~ x + (x|grp), data = d)
+predict(fit, newdata = newdata, allow.new.levels = TRUE)
+```
+
+
+```{r}
+predict(model.e3, newdata = current_data, allow.new.levels = TRUE)
+
+pred <- data.frame(predict(model.e3, newdata = current_data, allow.new.levels = TRUE))
+
+current_data <- cbind(current_data, pred)
+
+current_data <- current_data %>%
+  mutate(Vote_Number = VOTE_ELIGIBLE*predict.model.e3..newdata...current_data..allow.new.levels...TRUE.)
+
+#write.csv(current_data, "~/jvstats/predicted_data.csv")
+```
+
+Confidence Interval
+```{r}
+library(merTools)
+preds <- predictInterval(model.e3, newdata = current_data, n.sims = 999)
+preds
+
+current_data <- cbind(current_data, preds)
+
+write.csv(current_data, "~/jvstats/predicted_data.csv")
+
+```
+
+```{r}
+turnout_cty <- read_csv("~/jvstats/NEW_DATA/EXPORTED_DATA/turnout_cty.csv")
+predict_cty <- read_csv("~/jvstats/predicted_data.csv")
+
+predict_cty <- predict_cty %>%
+  dplyr::select(`YEAR.y`, `CTYNAME`, `Vote_Number`) 
+
+predict_cty$MIDTERM =1
+
+colnames(predict_cty) <- c("YEAR", "CTYNAME", "TOTVOTERS", "MIDTERM")
+
+turnout_cty <- turnout_cty %>%
+  dplyr::select(`YEAR`, `CTYNAME`, `TOTVOTERS`, `MIDTERM`)
+
+tot_voters <-rbind(turnout_cty, predict_cty)
+write.csv(tot_voters, "~/jvstats/2018_timetrend_totalvotes.csv")
+
+```
+
+
+```{r}
+tot <- read_csv("~/jvstats/2018_timetrend_totalvotes.csv")
+tot
+```

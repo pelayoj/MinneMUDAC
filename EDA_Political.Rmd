@@ -1,0 +1,24 @@
+---
+title: "EDA"
+output: html_document
+---
+```{r, setup, include = FALSE}
+library(tidyverse)
+library(AER)
+library(readr)
+sampledata <- read_csv("~/jvstats/sampledata.csv")
+```
+
+```{r}
+View(sampledata)
+```
+
+```{r}
+base <- sampledata %>%
+  group_by(YEAR, CONGDIST) %>%
+  summarise(
+    totalvotes = sum(TOTVOTERS, na.rm = TRUE),
+    
+  )
+```
+

@@ -1,0 +1,507 @@
+---
+title: "Josh_EDA"
+output: html_document
+---
+
+Citizen, Race, Education, Mirrage
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(lme4)
+#unemployment <- read_csv("~/jvstats/MYKHE/unemployment.csv")
+
+#citizen <- read_csv("~/jvstats/MYKHE/citizen.csv")
+#race <- read_csv("~/jvstats/MYKHE/race.csv")
+#education <- read_csv("~/jvstats/MYKHE/education.csv")
+#marraige <- read_csv("~/jvstats/MYKHE/marraige.csv")
+
+final_county <- read_csv("~/jvstats/final_county.csv")
+
+
+demographics <- final_county %>%
+  select(POPULATION, `INCOME.GEO.display-label`, MIDTERM, TOTVOTERS, CTYNAME, `Citizen: Total`, `Citizen: US Born`, `Citizen: Puerto Rico/US Islands Born`, `Citizen: Born Abroad`, `Citizen: Naturalization`, `Not Citizen`, WHITE, BLACK, INDIAN, ASIAN, HAWAIIAN, OTHERS, `Percent Married`, `Percent Divorced`,`YEAR`, VOTEPERCENT, POPULATION,INCOME.HC01_EST_VC13, EMPLOY.HC03_EST_VC01, EMPLOY.HC04_EST_VC01, EMPLOY.HC02_EST_VC01,INCOME.HC01_EST_VC01, INCOME.HC01_EST_VC02, INCOME.HC01_EST_VC18, AGE2024_TOTAL, AGE2529_TOTAL, AGE18ABOVE, TOTALMALE, TOTALFEMALE)
+
+#EMPLOY.HC03_EST_VC01
+#EMPLOY.HC04_EST_VC01
+#EMPLOY.HC02_EST_VC01
+#INCOME.HC01_EST_VC01 #Households
+#INCOME.HC01_EST_VC13 #Estimate Income
+#INCOME.HC01_EST_VC02
+#INCOME.HC01_EST_VC18 #POVERTY
+
+
+demographics <- demographics %>%
+  group_by(`INCOME.GEO.display-label`, YEAR, MIDTERM, `Citizen: Total`, `Citizen: US Born`, `Citizen: Puerto Rico/US Islands Born`, `Citizen: Born Abroad`, `Citizen: Naturalization`, `Not Citizen`, WHITE, BLACK, INDIAN, ASIAN, HAWAIIAN, OTHERS, `Percent Married`, `Percent Divorced`,VOTEPERCENT, POPULATION, INCOME.HC01_EST_VC13, EMPLOY.HC03_EST_VC01, EMPLOY.HC04_EST_VC01, EMPLOY.HC02_EST_VC01,INCOME.HC01_EST_VC01, INCOME.HC01_EST_VC02, INCOME.HC01_EST_VC18, `AGE2024_TOTAL`, AGE2529, AGE18ABOVE, TOTALMALE, TOTALFEMALE) %>%
+  summarize(sum_total_votes = sum(TOTVOTERS))
+
+
+final_county <- final_county %>%
+  mutate(percent_citizen = `Citizen: US Born`/POPULATION, percent_citizen_abroad = `Citizen: Born Abroad`/POPULATION, percent_citizen_naturalized = `Citizen: Naturalization`/POPULATION, percent_citizen_Puerto = `Citizen: Puerto Rico/US Islands Born`/POPULATION, percent_citizen_not = `Not Citizen`/POPULATION, percent_black = BLACK/POPULATION, percent_white = WHITE/POPULATION, percent_indian =INDIAN/POPULATION, percent_asian = ASIAN/POPULATION, percent_hawaiian = HAWAIIAN/POPULATION)
+
+final_county2010<- final_county %>%
+  filter(YEAR ==2010 | YEAR == 2014)
+
+demographics_midterm <- demographics %>%
+  filter(MIDTERM ==1)
+```
+
+```{r}
+ggplot(demographics, aes(x=percent_citizen)) + 
+  geom_histogram(color="black", fill="white")
+
+ggplot(final_county, aes(x=log(`Citizen: Total`))) + 
+  geom_histogram(color="black", fill="white")
+
+county_votes <- demographics %>%
+  group_by(`INCOME.GEO.display-label`, sum_total_votes) %>%
+  summarize(mean_votes = mean(VOTEPERCENT))
+county_votes <- county_votes[!is.na(county_votes$mean_votes),]
+county_votes[county_votes$mean_votes == max(county_votes$mean_votes),]
+county_votes[county_votes$mean_votes == min(county_votes$mean_votes),]
+
+county_votes_midterm <- demographics %>%
+  group_by(`INCOME.GEO.display-label`, MIDTERM, sum_total_votes) %>%
+  summarize(mean_votes = mean(VOTEPERCENT)) %>%
+  filter(MIDTERM == 1)
+
+county_votes_midterm <- county_votes_midterm[!is.na(county_votes_midterm$mean_votes),]
+county_votes_midterm[county_votes_midterm$mean_votes == max(county_votes_midterm$mean_votes),]
+county_votes_midterm[county_votes_midterm$mean_votes == min(county_votes_midterm$mean_votes),]
+
+```
+
+Citizen - Include all
+There doesn't seem to be a relationship between whether there are citizens and the voting percentage
+
+```{r}
+
+summary(lm(VOTEPERCENT ~ `percent_citizen` + `percent_citizen_abroad` + `percent_citizen_naturalized` +`percent_citizen_not`, data = demographics))
+
+cor.test(demographics$`Citizen: Total`, demographics$`Citizen: US Born`)
+cor.test(demographics$`Citizen: Total`, demographics$`Citizen: Puerto Rico/US Islands Born`)
+cor.test(demographics$`Citizen: Total`, demographics$`Citizen: Born Abroad`)
+cor.test(demographics$`Citizen: Total`, demographics$`Citizen: Naturalization`)
+
+cor.test(demographics_midterm$`Citizen: Total`, demographics_midterm$VOTEPERCENT)
+
+
+cor.test(demographics$percent_citizen, demographics$percent_citizen_abroad)
+cor.test(demographics$percent_citizen, demographics$percent_citizen_naturalized)
+cor.test(demographics$percent_citizen, demographics$percent_citizen_Puerto)
+cor.test(demographics$percent_citizen, demographics$percent_citizen_not)
+
+```
+
+
+```{r}
+ggplot(demographics, aes(x=log(percent_citizen_abroad), y=log(percent_citizen))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+ggplot(final_county, aes(x=percent_citizen, y=VOTEPERCENT, color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+#Log Citizen and year
+ggplot(demographics, aes(x=log(percent_citizen), y=log(VOTEPERCENT), color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+#Log Citizen and year
+ggplot(demographics, aes(x=log(percent_citizen), y=log(`VOTEPERCENT`), color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+```
+
+```{r}
+
+#Citizen Born Abroad
+ggplot(demographics, aes(x=percent_citizen_abroad, y=VOTEPERCENT, color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+ggplot(demographics, aes(x=percent_citizen_abroad, y=VOTEPERCENT, color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+ggplot(demographics, aes(x=log(percent_citizen_abroad), y=log(VOTEPERCENT), color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+ggplot(demographics, aes(x=log(percent_citizen_abroad), y=log(VOTEPERCENT), color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+summary(lm(VOTEPERCENT ~ `percent_citizen_abroad` + MIDTERM + MIDTERM:`percent_citizen_abroad`  , data = demographics))
+
+
+```
+
+```{r}
+#Citizen Born Abroad
+ggplot(demographics, aes(x=percent_citizen_naturalized, y=`VOTEPERCENT`, color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+ggplot(demographics, aes(x=percent_citizen_naturalized, y=`VOTEPERCENT`, color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+ggplot(demographics, aes(x=log(percent_citizen_naturalized), y=log(VOTEPERCENT), color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+ggplot(demographics, aes(x=log(percent_citizen_naturalized), y=log(VOTEPERCENT), color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+summary(lm(VOTEPERCENT ~ `percent_citizen_naturalized` + MIDTERM + MIDTERM:`percent_citizen_naturalized`  , data = demographics))
+
+```
+
+```{r}
+#Citizen Born Abroad
+ggplot(demographics, aes(x=percent_citizen_not, y=`VOTEPERCENT`, color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+ggplot(demographics, aes(x=percent_citizen_not, y=`VOTEPERCENT`, color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+ggplot(demographics, aes(x=log(percent_citizen_not), y=log(`VOTEPERCENT`), color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+ggplot(demographics, aes(x=log(percent_citizen_not), y=log(`VOTEPERCENT`), color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+summary(lm(VOTEPERCENT ~ `percent_citizen_not` + MIDTERM + MIDTERM:`percent_citizen_not`  , data = demographics))
+
+```
+
+
+Race - Include but Indian is strange
+Hawaiian is the only one that looks kind of significant?
+White is significant but not for midterm....
+```{r}
+ggplot(demographics, aes(x=log(`BLACK`))) + 
+  geom_histogram(color="black", fill="white")
+
+ggplot(demographics, aes(x=log(percent_black))) + 
+  geom_histogram(color="black", fill="white")
+
+ggplot(demographics, aes(x=percent_black, y=VOTEPERCENT, color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+
+ggplot(demographics, aes(x=`percent_black`, y=VOTEPERCENT, color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+
+ggplot(demographics, aes(x=log(`percent_black`), y=log(VOTEPERCENT), color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+ggplot(demographics, aes(x=log(`percent_black`), y=log(VOTEPERCENT), color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+summary(lm(log(VOTEPERCENT) ~ log(percent_black), data = demographics))
+
+```
+
+```{r}
+ggplot(demographics, aes(x=log(`percent_white`))) + 
+  geom_histogram(color="black", fill="white")
+
+ggplot(demographics, aes(x=percent_white, y=VOTEPERCENT, color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+
+ggplot(demographics, aes(x=`percent_white`, y=VOTEPERCENT, color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+
+ggplot(demographics, aes(x=log(`percent_white`), y=log(VOTEPERCENT), color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)
+#Log Citizen and year
+ggplot(demographics, aes(x=log(`percent_white`), y=log(VOTEPERCENT), color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23)   +geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+```
+
+```{r}
+
+
+ggplot(demographics, aes(x=log(`percent_indian`))) + 
+  geom_histogram(color="black", fill="white")
+
+ggplot(demographics, aes(x=percent_indian, y=VOTEPERCENT, color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+
+ggplot(demographics, aes(x=`percent_indian`, y=VOTEPERCENT, color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+
+ggplot(demographics, aes(x=log(`percent_indian`), y=log(VOTEPERCENT), color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+#Log Citizen and year
+ggplot(demographics, aes(x=log(`percent_indian`), y=log(VOTEPERCENT), color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23)   +geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+```
+
+```{r}
+
+ggplot(demographics, aes(x=log(`percent_asian`))) + 
+  geom_histogram(color="black", fill="white")
+
+ggplot(demographics, aes(x=percent_asian, y=VOTEPERCENT, color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+
+ggplot(demographics, aes(x=`percent_asian`, y=VOTEPERCENT, color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+
+ggplot(demographics, aes(x=log(`percent_asian`), y=log(VOTEPERCENT), color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)
+#Log Citizen and year
+ggplot(demographics, aes(x=log(`percent_asian`), y=log(VOTEPERCENT), color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23)   +geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+```
+
+```{r}
+
+ggplot(demographics, aes(x=log(`percent_hawaiian`))) + 
+  geom_histogram(color="black", fill="white")
+
+ggplot(demographics, aes(x=percent_hawaiian, y=VOTEPERCENT, color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+
+ggplot(demographics, aes(x=`percent_hawaiian`, y=VOTEPERCENT, color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+
+ggplot(demographics, aes(x=log(`percent_hawaiian`), y=VOTEPERCENT, color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+#Log Citizen and year
+ggplot(demographics, aes(x=log(`percent_hawaiian`), y=log(VOTEPERCENT), color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23)   +geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+```
+
+```{r}
+
+summary(lm(log(VOTEPERCENT) ~ log(percent_white), data = demographics))
+summary(lm(log(VOTEPERCENT) ~ log(percent_white), data = demographics[demographics$MIDTERM==1,]))
+summary(lm(log(VOTEPERCENT) ~ log(percent_black), data = demographics))
+summary(lm(log(VOTEPERCENT) ~ log(percent_black), data = demographics[demographics$MIDTERM==1,]))
+
+#summary(lm(log(VOTEPERCENT) ~ log(percent_indian), data = demographics[!is.na(demographics$INDIAN),]))
+#summary(lm(log(VOTEPERCENT) ~ log(percent_indian), data = demographics[demographics$MIDTERM==1,]))
+
+#summary(lm(log(VOTEPERCENT) ~ log(percent_asian), data = demographics))
+#summary(lm(log(VOTEPERCENT) ~ log(percent_asian), data = demographics[demographics$MIDTERM==1,]))
+
+#summary(lm(log(VOTEPERCENT) ~ log(percent_hawaiian), data = demographics))
+#summary(lm(log(VOTEPERCENT) ~ log(percent_hawaiian), data = demographics[demographics$MIDTERM==1,]))
+
+cor.test(demographics$percent_white, demographics$percent_black)
+cor.test(demographics$percent_white, demographics$percent_indian)
+cor.test(demographics$percent_white, demographics$percent_asian)
+cor.test(demographics$percent_white, demographics$percent_hawaiian)
+
+cor.test(demographics_midterm$percent_white, demographics_midterm$VOTEPERCENT)
+cor.test(demographics_midterm$percent_black, demographics_midterm$VOTEPERCENT)
+cor.test(demographics_midterm$percent_indian, demographics_midterm$VOTEPERCENT)
+cor.test(demographics_midterm$percent_asian, demographics_midterm$VOTEPERCENT)
+cor.test(demographics_midterm$percent_hawaiian, demographics_midterm$VOTEPERCENT)
+
+
+#summary(lm(log(sum_total_votes) ~ log(WHITE), data = race))
+#summary(lm(log(sum_total_votes) ~ log(INDIAN), data = race))
+
+```
+
+Percent Married - Don't include based on Graph
+```{r, include = FALSE}
+ggplot(demographics, aes(x=log(`Percent Married`))) + 
+  geom_histogram(color="black", fill="white")
+
+demographics <- demographics[!is.na(demographics$`Percent Married`),]
+
+ggplot(demographics, aes(x=`Percent Married`, y=VOTEPERCENT, color=as.factor(MIDTERM))) +
+  geom_point(size=2, shape=23) +geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+
+ggplot(demographics, aes(x=`Percent Married`, y=VOTEPERCENT, color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+cor.test(as.numeric(demographics$`Percent Married`), demographics$VOTEPERCENT)
+cor.test(as.numeric(demographics$`Percent Divorced`), demographics$VOTEPERCENT)
+
+
+
+
+
+```
+
+Percent Citizen US Born
+Percent Citizen Born Abroad
+Percent White
+Percent Black
+Marriage Percent
+
+Income/Race Interaction
+
+
+Vote Percentage is the same for both highblack and not high black. However, when we factor in income, we can see that areas with high black percentage have increasing voter percentage where areas with lower black percentage have decreasing.
+```{r}
+demographics <- demographics[complete.cases(demographics), ]
+median(demographics$percent_black)
+median(demographics$percent_white)
+
+demographics <- demographics[complete.cases(demographics), ]
+
+demographics <- demographics %>%
+  mutate(highwhite = ifelse(percent_white >0.94, 1, 0), highblack = ifelse(percent_black >.007514032, 1, 0) )
+
+#ggplot(demographics[demographics$MIDTERM==1,], aes(x=as.factor(highwhite), y=VOTEPERCENT)) + 
+#  geom_boxplot()
+
+ggplot(demographics[demographics$MIDTERM==1,], aes(x=as.factor(highwhite), y=VOTEPERCENT)) + 
+  geom_boxplot()
+
+ggplot(demographics[demographics$MIDTERM==1,], aes(x=INCOME.HC01_EST_VC13, y=VOTEPERCENT, color=as.factor(highwhite))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+summary(lm(VOTEPERCENT ~ INCOME.HC01_EST_VC13 + highwhite + highwhite:INCOME.HC01_EST_VC13, data = demographics))
+
+```
+
+In 2010 and 2006 there is steep slope for counties with a highblack population. However, in 2014, the slope is clearly different indicating that we need to account for different years when analyzing the voting of the black population.
+```{r}
+ggplot(demographics[demographics$YEAR==2006,], aes(x=INCOME.HC01_EST_VC13, y=VOTEPERCENT, color=as.factor(highblack))) + geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE) + ggtitle("2006")
+
+ggplot(demographics[demographics$YEAR==2010,], aes(x=INCOME.HC01_EST_VC13, y=VOTEPERCENT, color=as.factor(highblack))) + geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE) + ggtitle("2010")
+
+ggplot(demographics[demographics$YEAR==2014,], aes(x=INCOME.HC01_EST_VC13, y=VOTEPERCENT, color=as.factor(highblack))) + geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE) + ggtitle("2014")
+```
+
+In the high white population, it is interesting that in 2014, areas with high white population had a smaller votepercentage as income increased.
+```{r}
+ggplot(demographics[demographics$YEAR==2006,], aes(x=INCOME.HC01_EST_VC13, y=VOTEPERCENT, color=as.factor(highwhite))) + geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE) + ggtitle("2006")
+
+ggplot(demographics[demographics$YEAR==2010,], aes(x=INCOME.HC01_EST_VC13, y=VOTEPERCENT, color=as.factor(highwhite))) + geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE) + ggtitle("2010")
+
+ggplot(demographics[demographics$YEAR==2014,], aes(x=INCOME.HC01_EST_VC13, y=VOTEPERCENT, color=as.factor(highwhite))) + geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE) + ggtitle("2014")
+```
+
+```{r}
+ggplot(demographics[demographics$MIDTERM==1,], aes(x=INCOME.HC01_EST_VC18, y=VOTEPERCENT, color=as.factor(highblack))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+ggplot(demographics[demographics$YEAR==2006,], aes(x=INCOME.HC01_EST_VC18, y=VOTEPERCENT, color=as.factor(highblack))) + geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE) + ggtitle("2006")
+
+ggplot(demographics[demographics$YEAR==2010,], aes(x=INCOME.HC01_EST_VC18, y=VOTEPERCENT, color=as.factor(highblack))) + geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE) + ggtitle("2010")
+
+ggplot(demographics[demographics$YEAR==2014,], aes(x=INCOME.HC01_EST_VC18, y=VOTEPERCENT, color=as.factor(highblack))) + geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE) + ggtitle("2014")
+
+summary(lm(VOTEPERCENT ~ INCOME.HC01_EST_VC18 + highblack + highblack:INCOME.HC01_EST_VC13, data = demographics))
+
+
+```
+
+
+```{r}
+model.a <- lmer(VOTEPERCENT ~ 1 +  (1 |`INCOME.GEO.display-label`), 
+  REML=T, data=demographics)
+summary(model.a)
+
+model.b <- lmer(VOTEPERCENT ~ 1 +  (YEAR |`INCOME.GEO.display-label`), 
+  REML=T, data=demographics)
+summary(model.b)
+
+model.b <- lmer(VOTEPERCENT ~ INCOME.HC01_EST_VC13 + INCOME.HC01_EST_VC13:YEAR + (YEAR |`INCOME.GEO.display-label`), 
+  REML=T, data=demographics)
+summary(model.b)
+
+```
+
+
+Age
+```{r}
+ggplot(demographics, aes(x=demographics$AGE2024)) + 
+  geom_histogram(color="black", fill="white")
+
+ggplot(demographics[demographics$MIDTERM==1,], aes(x=AGE2024, y=VOTEPERCENT, color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+ggplot(demographics[demographics$MIDTERM==1,], aes(x=AGE2529, y=VOTEPERCENT, color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+ggplot(demographics[demographics$MIDTERM==1,], aes(x=AGE18ABOVE, y=VOTEPERCENT, color=as.factor(YEAR))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+```
+
+
+Sex and Income
+```{r}
+demographics <- demographics[complete.cases(demographics), ]
+
+demographics <- demographics %>%
+  mutate(percent_female = TOTALFEMALE/POPULATION, percent_male = TOTALMALE/POPULATION)
+
+median(demographics$percent_female)
+median(demographics$percent_male)
+
+demographics <- demographics %>%
+  mutate(highfemale = ifelse(percent_female >0.4993941, 1, 0))
+
+ggplot(demographics, aes(x=demographics$AGE2024)) + 
+  geom_histogram(color="black", fill="white")
+
+ggplot(demographics[demographics$MIDTERM==1,], aes(x=INCOME.HC01_EST_VC13, y=VOTEPERCENT, color=as.factor(highfemale))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+ggplot(demographics[demographics$MIDTERM==1,], aes(x=percent_female, y=VOTEPERCENT)) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+ggplot(demographics[demographics$MIDTERM==1,], aes(x=TOTALFEMALE, y=VOTEPERCENT)) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+ggplot(demographics[demographics$MIDTERM==1,], aes(x=percent_female, y=log(VOTEPERCENT), color = as.factor(YEAR))) +
+  geom_point(size=2, shape=23)+geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+```
+
+Linear Regression
+```{r}
+mod1 <- lm(VOTEPERCENT~1, data = demographics[demographics$MIDTERM==1,]); summary(mod1)
+mod2 <- lm(VOTEPERCENT~percent_white, data = demographics[demographics$MIDTERM==1,]); summary(mod2)
+mod3 <- lm(VOTEPERCENT~percent_citizen +percent_citizen_abroad , data = demographics[demographics$MIDTERM==1,]); summary(mod3)
+mod4 <- lm(VOTEPERCENT~INCOME.HC01_EST_VC13 +INCOME.HC01_EST_VC18 , data = demographics[demographics$MIDTERM==1,]); summary(mod4)
+mod5 <- lm(VOTEPERCENT~TOTALFEMALE, data = demographics[demographics$MIDTERM==1,]); summary(mod5)
+mod5b <- lm(VOTEPERCENT~highfemale + INCOME.HC01_EST_VC13+INCOME.HC01_EST_VC13:highfemale, data = demographics[demographics$MIDTERM==1,]); summary(mod5b)
+mod5c <- lm(VOTEPERCENT~highwhite + INCOME.HC01_EST_VC13+INCOME.HC01_EST_VC13:highwhite, data = demographics[demographics$MIDTERM==1,]); summary(mod5c)
+
+percent_white +percent_citizen +percent_citizen_abroad +INCOME.HC01_EST_VC13 +INCOME.HC01_EST_VC18 +TOTALFEMALE+highfemale + INCOME.HC01_EST_VC13+INCOME.HC01_EST_VC13:highfemale+AGE2024 + AGE2529+percent_female + YEAR + percent_female:YEAR
+
+mod6 <- lm(VOTEPERCENT~AGE2024 + AGE2529, data = demographics[demographics$MIDTERM==1,]); summary(mod6)
+mod7 <- lm(VOTEPERCENT~percent_female + YEAR + percent_female:YEAR, data = demographics[demographics$MIDTERM==1,]); summary(mod7)
+mod8 <- lm(VOTEPERCENT~demographics$INCOME.HC01_EST_VC13 +  + high, data = demographics[demographics$MIDTERM==1,]); summary(mod1)
+mod9 <- lm(VOTEPERCENT~percent_white +percent_citizen +percent_citizen_abroad +INCOME.HC01_EST_VC13 +INCOME.HC01_EST_VC18 +TOTALFEMALE+highfemale + INCOME.HC01_EST_VC13+INCOME.HC01_EST_VC13:highfemale+AGE2024 + AGE2529+percent_female + percent_female, data = demographics[demographics$MIDTERM==1,]); summary(mod9)
+
+#final_county <- final_county[complete.cases(final_county), ]
+
+#final_county <- final_county %>%
+#  mutate(highwhite = ifelse(percent_white >0.94, 1, 0), highblack = ifelse(percent_black >.007514032, 1, 0) )
+
+mod10 <- lm(VOTEPERCENT~`BACHELOR'S DEGREE >25` + `HIGHSCHOOL DEGREE`+AGE2024_TOTAL + AGE2529_TOTAL+ EMPLOY.HC04_EST_VC01+INCOME.HC01_EST_VC13+INCOME.HC01_EST_VC02, data = final_county[final_county$MIDTERM==1 ,]); summary(mod1)
+
+
+mod11 <- lm(VOTEPERCENT~`BACHELOR'S DEGREE >25` + `HIGHSCHOOL DEGREE`+AGE2024 + AGE2529+ EMPLOY.HC04_EST_VC01+INCOME.HC01_EST_VC13+INCOME.HC01_EST_VC02+percent_white, data = hennepin[hennepin$`MIDTERM`==1 ,]); summary(mod11)
+
+final_county2010<- final_county %>%
+  filter(YEAR ==2010 | YEAR == 2014)
+
+```
+
+```{r}
+
+final_county <- final_county %>%
+  mutate(percent_citizen = `Citizen: US Born`/POPULATION, percent_citizen_abroad = `Citizen: Born Abroad`/POPULATION, percent_citizen_naturalized = `Citizen: Naturalization`/POPULATION, percent_citizen_Puerto = `Citizen: Puerto Rico/US Islands Born`/POPULATION, percent_citizen_not = `Not Citizen`/POPULATION, percent_black = BLACK/POPULATION, percent_white = WHITE/POPULATION, percent_indian =INDIAN/POPULATION, percent_asian = ASIAN/POPULATION, percent_hawaiian = HAWAIIAN/POPULATION)
+
+
+model.a <- lmer(VOTEPERCENT ~ `BACHELOR'S DEGREE >25` + `HIGHSCHOOL DEGREE`+AGE2024_TOTAL + AGE2529_TOTAL+ EMPLOY.HC04_EST_VC01+INCOME.HC01_EST_VC13+INCOME.HC01_EST_VC02 + percent_white+percent_citizen+SOCIALCAP.assn2014+
+  (1|CTYNAME), REML=T, data=final_county[final_county$MIDTERM==1,])
+summary(model.a)
+
+model.c <- lmer(VOTEPERCENT ~ `BACHELOR'S DEGREE >25` + `HIGHSCHOOL DEGREE`+AGE2024_TOTAL + AGE2529_TOTAL+ EMPLOY.HC04_EST_VC01+INCOME.HC01_EST_VC13+INCOME.HC01_EST_VC02 + YEAR+SOCIALCAP.assn2014+
+  (1|CTYNAME), REML=T, data=final_county2010[final_county2010$MIDTERM==1,])
+summary(model.c)
+
+mod1 <- lm(VOTEPERCENT~1, data = demographics[demographics$MIDTERM==1,]); summary(mod1)
+
+final_county$`INCOME.GEO.display-label`
+
+```
+
