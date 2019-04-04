@@ -1,0 +1,423 @@
+---
+title: "Ha_demographics"
+author: "Thu Ha Nguyen"
+date: "10/27/2018"
+output: html_document
+---
+
+```{r}
+library(readr)
+library(readxl)
+library(tidyverse)
+library(stringr)
+```
+
+
+```{r}
+library(readr)
+library(readxl)
+library(tidyverse)
+library(stringr)
+```
+
+##Occupation
+```{r}
+occupation06 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/OCCUPATION_INDUSTRY/ACS_06_EST_S2405_with_ann.csv")
+occupation06 <- occupation06 %>%
+  filter(`GEO.display-label` != "Geography") %>%
+  mutate(YEAR = 2006)
+
+occupation08 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/OCCUPATION_INDUSTRY/ACS_08_3YR_S2405_with_ann.csv")
+occupation08 <- occupation08 %>%
+  filter(`GEO.display-label` != "Geography") %>%
+  mutate(YEAR = 2008)
+
+occupation10 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/OCCUPATION_INDUSTRY/ACS_10_5YR_S2405_with_ann.csv")
+occupation10 <- occupation10 %>%
+  filter(`GEO.display-label` != "Geography") %>%
+  mutate(YEAR = 2010)
+
+occupation12 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/OCCUPATION_INDUSTRY/ACS_12_5YR_S2405_with_ann.csv")
+occupation12 <- occupation12 %>%
+  filter(`GEO.display-label` != "Geography") %>%
+  mutate(YEAR = 2012)
+
+occupation14 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/OCCUPATION_INDUSTRY/ACS_14_5YR_S2405_with_ann.csv")
+occupation14 <- occupation14 %>%
+  filter(`GEO.display-label` != "Geography") %>%
+  mutate(YEAR = 2014)
+
+occupation16 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/OCCUPATION_INDUSTRY/ACS_16_5YR_S2405_with_ann.csv")
+occupation16 <- occupation16 %>%
+  filter(`GEO.display-label` != "Geography") %>%
+  mutate(YEAR = 2016)
+
+occupation17 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/OCCUPATION_INDUSTRY/ACS_17_1YR_S2405_with_ann.csv")
+occupation17 <- occupation17 %>%
+  filter(`GEO.display-label` != "Geography") %>%
+  mutate(YEAR = 2017)
+
+occupation <- occupation10 %>%
+  rbind(occupation12) %>%
+  rbind(occupation14) %>%
+  rbind(occupation16) %>%
+  rbind(occupation17)
+occupation <- occupation %>%
+  select(`GEO.display-label`, HC01_EST_VC01, HC01_EST_VC02, HC01_EST_VC03, HC01_EST_VC04, HC01_EST_VC05, HC01_EST_VC06, HC01_EST_VC07, HC01_EST_VC08, HC01_EST_VC09, HC01_EST_VC10, HC01_EST_VC11, HC01_EST_VC12, HC01_EST_VC13, HC01_EST_VC14, YEAR)
+
+occupation2 <- occupation06 %>%
+  rbind(occupation08)
+occupation2 <- occupation2 %>%
+  select(`GEO.display-label`, HC01_EST_VC01, HC01_EST_VC02, HC01_EST_VC03, HC01_EST_VC04, HC01_EST_VC05, HC01_EST_VC06, HC01_EST_VC07, HC01_EST_VC08, HC01_EST_VC09, HC01_EST_VC10, HC01_EST_VC11, HC01_EST_VC12, HC01_EST_VC13, HC01_EST_VC14, YEAR)
+
+occupation <- rbind(occupation, occupation2)
+colnames(occupation) <- str_c("OCC.", colnames(occupation))
+occupation <- occupation %>%
+  mutate(CTYNAME = str_to_lower(str_sub(`OCC.GEO.display-label`, 1, str_length(`OCC.GEO.display-label`) - 18)),
+         YEAR = as.numeric(OCC.YEAR)) %>%
+  select(-`OCC.GEO.display-label`, -OCC.YEAR)
+head(occupation)
+#write_excel_csv(occupation, "~/jvstats/NEW_DATA/EXPORTED_DATA/occupation.csv")
+```
+
+
+#employment
+```{r}
+employment06 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/EMPLOYMENT/ACS_06_EST_S2301_with_ann.csv")
+employment06 <- employment06[-1,c(1:11)]
+employment06 <- employment06 %>%
+  mutate(YEAR = 2006)
+
+
+employment08 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/EMPLOYMENT/ACS_08_1YR_S2301_with_ann.csv")
+employment08 <- employment08[-1,c(1:11)]
+employment08 <- employment08 %>%
+  mutate(YEAR = 2008)
+
+
+employment10 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/EMPLOYMENT/ACS_10_5YR_S2301_with_ann.csv")
+employment10 <- employment10[-1,c(1:11)]
+employment10 <- employment10 %>%
+  mutate(YEAR = 2010)
+
+employment12 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/EMPLOYMENT/ACS_12_5YR_S2301_with_ann.csv")
+employment12 <- employment12[-1,c(1:11)]
+employment12 <- employment12 %>%
+  mutate(YEAR = 2012)
+
+
+employment14 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/EMPLOYMENT/ACS_14_5YR_S2301_with_ann.csv")
+employment14 <- employment14[-1,c(1:11)]
+employment14 <- employment14 %>%
+  mutate(YEAR = 2014)
+
+
+employment16 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/EMPLOYMENT/ACS_16_5YR_S2301_with_ann.csv")
+employment16 <- employment16[-1,c(1:11)]
+employment16 <- employment16 %>%
+  mutate(YEAR = 2016)
+
+
+employment17 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/EMPLOYMENT/ACS_17_1YR_S2301_with_ann.csv")
+employment17 <- employment17[-1,c(1:11)]
+employment17 <- employment17 %>%
+  mutate(YEAR = 2017)
+
+employment.df <- employment17 %>%
+  rbind(employment16) %>%
+  rbind(employment14) %>%
+  rbind(employment12) %>%
+  rbind(employment10) %>%
+  rbind(employment08) %>%
+  rbind(employment06)
+
+colnames(employment.df) <- str_c("EMPLOY.", colnames(employment.df))
+employment.df <- employment.df %>%
+  mutate(CTYNAME = str_to_lower(str_sub(`EMPLOY.GEO.display-label`, 1, str_length(`EMPLOY.GEO.display-label`) - 18)),
+         YEAR = as.numeric(EMPLOY.YEAR)) %>%
+  select(-`EMPLOY.GEO.display-label`, -EMPLOY.YEAR)
+head(employment.df)
+#write_excel_csv(employment.df, "~/jvstats/NEW_DATA/EXPORTED_DATA/employment.csv")
+```
+
+#Other
+```{r}
+citizen <- read_csv("~/jvstats/MYKHE/MYKHE_ORIGINAL_DATASETS/citizen.csv")
+citizenEXTRA <- read_csv("~/jvstats/MYKHE/MYKHE_EXTRA_102718/citizenEXTRA.csv")
+citizen.df <- rbind(citizen, citizenEXTRA)
+citizen.df <- citizen.df[,-1]
+
+educationEXTRA <- read_csv("~/jvstats/MYKHE/MYKHE_EXTRA_102718/educationEXTRA.csv")
+education <- read_csv("~/jvstats/MYKHE/MYKHE_ORIGINAL_DATASETS/education.csv")
+education <- education %>%
+  select(-`POVERTY RATE >25`)
+education.df <- rbind(education, educationEXTRA)
+education.df <- education.df[-1]
+
+marriageEXTRA <- read_csv("~/jvstats/MYKHE/MYKHE_EXTRA_102718/marriageEXTRA.csv")
+marriage <- read_csv("~/jvstats/MYKHE/MYKHE_ORIGINAL_DATASETS/marraige.csv")
+marriage.df <- rbind(marriageEXTRA, marriage)
+marriage.df <- marriage.df[,-1]
+
+populationEXTRA <- read_csv("~/jvstats/MYKHE/MYKHE_EXTRA_102718/populationEXTRA.csv")
+population <- read_csv("~/jvstats/MYKHE/MYKHE_ORIGINAL_DATASETS/population.csv")
+population.df <- rbind(population, populationEXTRA)
+population.df <- population.df[,-1]
+
+raceEXTRA <- read_csv("~/jvstats/MYKHE/MYKHE_EXTRA_102718/raceEXTRA.csv")
+race <- read_csv("~/jvstats/MYKHE/MYKHE_ORIGINAL_DATASETS/race.csv")
+race.df <- rbind(race, raceEXTRA)
+race.df <- race.df[,-1]
+
+sexage4 <- read_csv("~/jvstats/MYKHE/MYKHE_EXTRA_102718/sexage4.csv")
+
+
+
+subdemographic <- citizen.df %>%
+  left_join(marriage.df, by=c("CTYNAME", "YEAR")) %>%
+  left_join(population.df, by = c("CTYNAME", "YEAR")) %>%
+  left_join(race.df, by = c("CTYNAME", "YEAR")) %>%
+  left_join(sexage4, by = c("CTYNAME", "YEAR")) %>%
+  left_join(education.df, by = c("CTYNAME", "YEAR")) %>%
+  mutate(CTYNAME = str_to_lower(str_sub(CTYNAME, 1, str_length(CTYNAME) - 18)))
+#write_excel_csv(subdemographic, "~/jvstats/NEW_DATA/EXPORTED_DATA/subdemographic.csv")
+
+```
+
+
+#Voting eligible
+```{r}
+voting_elig_06.df <- read_csv("~/jvstats/NEW_DATA/VOTING_ELIGIBLE/ACS_06_EST_B05003_with_ann.csv")
+voting_elig_06.df <- voting_elig_06.df %>%
+  mutate(YEAR = 2006) %>%
+  filter(`GEO.display-label` != "Geography")
+
+voting_elig_08.df <- read_csv("~/jvstats/NEW_DATA/VOTING_ELIGIBLE/ACS_08_3YR_B05003_with_ann.csv")
+voting_elig_08.df <- voting_elig_08.df %>%
+  mutate(YEAR = 2008) %>%
+    filter(`GEO.display-label` != "Geography")
+
+
+voting_elig_10.df <- read_csv("~/jvstats/NEW_DATA/VOTING_ELIGIBLE/ACS_10_5YR_B05003_with_ann.csv")
+voting_elig_10.df <- voting_elig_10.df %>%
+  mutate(YEAR = 2010) %>%
+  filter(`GEO.display-label` != "Geography")
+
+
+voting_elig_12.df <- read_csv("~/jvstats/NEW_DATA/VOTING_ELIGIBLE/ACS_12_5YR_B05003_with_ann.csv")
+voting_elig_12.df <- voting_elig_12.df %>%
+  mutate(YEAR = 2012) %>%
+  filter(`GEO.display-label` != "Geography")
+
+
+voting_elig_14.df <- read_csv("~/jvstats/NEW_DATA/VOTING_ELIGIBLE/ACS_14_5YR_B05003_with_ann.csv")
+voting_elig_14.df <- voting_elig_14.df %>%
+  mutate(YEAR = 2014) %>%
+  filter(`GEO.display-label` != "Geography")
+
+
+voting_elig_16.df <- read_csv("~/jvstats/NEW_DATA/VOTING_ELIGIBLE/ACS_16_5YR_B05003_with_ann.csv")
+voting_elig_16.df <- voting_elig_16.df %>%
+  mutate(YEAR = 2016) %>%
+    filter(`GEO.display-label` != "Geography")
+
+
+voting_elig_17.df <- read_csv("~/jvstats/NEW_DATA/VOTING_ELIGIBLE/ACS_17_1YR_B05003_with_ann.csv")
+voting_elig_17.df <- voting_elig_17.df %>%
+  mutate(YEAR = 2017) %>%
+      filter(`GEO.display-label` != "Geography")
+
+
+voting_elig.df <- rbind(voting_elig_17.df, voting_elig_16.df)
+voting_elig.df <- rbind(voting_elig.df, voting_elig_14.df)
+voting_elig.df <- rbind(voting_elig.df, voting_elig_12.df)
+voting_elig.df <- rbind(voting_elig.df, voting_elig_10.df)
+voting_elig.df <- rbind(voting_elig.df, voting_elig_08.df)
+voting_elig.df <- rbind(voting_elig.df, voting_elig_06.df)
+head(voting_elig.df)
+
+voting_elig.df <- voting_elig.df %>%
+  select(`GEO.display-label`, HD01_VD09, HD01_VD11, HD01_VD20, HD01_VD22, YEAR) %>%
+  mutate(VOTE_ELIGIBLE = as.numeric(HD01_VD09) + as.numeric(HD01_VD11) + as.numeric(HD01_VD20) + as.numeric(HD01_VD22),
+         CTYNAME = str_to_lower(str_sub(`GEO.display-label`, 1, str_length(`GEO.display-label`) - 18)),
+         VOTE_ELI.HD01_VD09 = as.numeric(HD01_VD09),
+         VOTE_ELI.HD01_VD11 = as.numeric(HD01_VD11),
+         VOTE_ELI.HD01_VD20 = as.numeric(HD01_VD20),
+         VOTE_ELI.HD01_VD22 = as.numeric(HD01_VD22)) %>%
+  select(CTYNAME, VOTE_ELI.HD01_VD09, VOTE_ELI.HD01_VD11, VOTE_ELI.HD01_VD20, VOTE_ELI.HD01_VD22,VOTE_ELIGIBLE, YEAR)
+head(voting_elig.df)
+#write_excel_csv(voting_elig.df, "~/jvstats/NEW_DATA/EXPORTED_DATA/voting_eligible.csv")
+
+```
+
+#Occupation
+
+```{r}
+occupation17 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_SUPPLEMENTAL/OCCUPATION_UNEMPLOYMENT_HEALTH_INSURANCE/ACS_17_1YR_DP03_with_ann.csv")
+occupation17 <- occupation17 %>%
+  mutate(YEAR = 2017) %>%
+    filter(`GEO.display-label` != "Geography")
+
+occupation16 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_SUPPLEMENTAL/OCCUPATION_UNEMPLOYMENT_HEALTH_INSURANCE/ACS_16_5YR_DP03_with_ann.csv")
+occupation16 <- occupation16 %>%
+  mutate(YEAR = 2016) %>%
+    filter(`GEO.display-label` != "Geography")
+
+occupation14 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/OCCUPATION_UNEMPLOYMENT_HEALTH_INSURANCE/ACS_14_5YR_DP03_with_ann.csv")
+occupation14 <- occupation14 %>%
+  mutate(YEAR = 2014) %>%
+    filter(`GEO.display-label` != "Geography")
+
+
+occupation12 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_SUPPLEMENTAL/OCCUPATION_UNEMPLOYMENT_HEALTH_INSURANCE/ACS_12_5YR_DP03_with_ann.csv")
+occupation12 <- occupation12 %>%
+  mutate(YEAR = 2012) %>%
+    filter(`GEO.display-label` != "Geography")
+
+occupation10 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/OCCUPATION_UNEMPLOYMENT_HEALTH_INSURANCE/ACS_10_5YR_DP03_with_ann.csv")
+occupation10 <- occupation10 %>%
+  mutate(YEAR = 2010) %>%
+    filter(`GEO.display-label` != "Geography")
+
+
+occupation08 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_SUPPLEMENTAL/OCCUPATION_UNEMPLOYMENT_HEALTH_INSURANCE/ACS_08_1YR_S2301_with_ann.csv")
+occupation08 <- occupation08 %>%
+  mutate(YEAR = 2008) %>%
+    filter(`GEO.display-label` != "Geography")
+
+
+occupation06 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_SUPPLEMENTAL/OCCUPATION_UNEMPLOYMENT_HEALTH_INSURANCE/ACS_06_EST_S2301_with_ann.csv")
+occupation06 <- occupation06 %>%
+  mutate(YEAR = 2006) %>%
+    filter(`GEO.display-label` != "Geography")
+
+
+occupation.df <- rbind(occupation17, occupation16)
+occupation.df <- rbind(occupation.df, occupation14)
+
+colnames(occupation12) <- colnames(occupation.df)
+colnames(occupation10) <- colnames(occupation.df)
+colnames(occupation06) == colnames(occupation08)
+colnames(occupation12) == colnames(occupation08)
+
+occupation.df <- rbind(occupation.df, occupation12)
+occupation.df <- rbind(occupation.df, occupation10)
+
+
+occupationc.df <- rbind(occupation08, occupation06)
+
+```
+
+
+
+#County income estimate
+```{r}
+#2016 
+income_cty_16.df <- read_csv("~/jvstats/County Income Estimates/ACS_16_5YR_S1901_with_ann.csv")
+colnames(income_cty_16.df) <- str_c("INCOME.", colnames(income_cty_16.df)) 
+income_cty_16.df <- income_cty_16.df %>%
+  filter(`INCOME.GEO.display-label` != "Minnesota", `INCOME.GEO.display-label` != "Geography") %>%
+  mutate(CTYNAME = str_sub(`INCOME.GEO.display-label`, 1 , str_length(`INCOME.GEO.display-label`) - 18))
+length(unique(income_cty_16.df$CTYNAME))
+ncol(income_cty_16.df)
+YEAR = 2016
+income_cty_16.df <- cbind(income_cty_16.df, YEAR)
+
+
+#2014
+income_cty_14.df <- read_csv("~/jvstats/County Income Estimates/ACS_14_5YR_S1901_with_ann.csv", col_names = TRUE)
+colnames(income_cty_14.df) <- str_c("INCOME.", colnames(income_cty_14.df)) 
+income_cty_14.df <- income_cty_14.df %>%
+  filter(`INCOME.GEO.display-label` != "Minnesota", `INCOME.GEO.display-label` != "Geography") %>%
+  mutate(CTYNAME = str_sub(`INCOME.GEO.display-label`, 1 , str_length(`INCOME.GEO.display-label`) - 18))
+length(unique(income_cty_14.df$CTYNAME))
+ncol(income_cty_14.df)
+YEAR = 2014
+income_cty_14.df <- cbind(income_cty_14.df, YEAR)
+
+
+#2012
+income_cty_12.df <- read_csv("~/jvstats/County Income Estimates/ACS_12_5YR_S1901_with_ann.csv", col_names = TRUE)
+income_cty_12.df <- income_cty_12.df %>%
+  filter(`GEO.display-label` != "Minnesota", `GEO.display-label` != "Geography") %>%
+  mutate(CTYNAME = str_sub(`GEO.display-label`, 1 , str_length(`GEO.display-label`) - 18))
+length(unique(income_cty_12.df$CTYNAME))
+ncol(income_cty_12.df)
+YEAR = 2012
+income_cty_12.df <- cbind(income_cty_12.df, YEAR)
+
+
+#2010
+income_cty_10.df <- read_csv("~/jvstats/County Income Estimates/ACS_10_5YR_S1901_with_ann.csv", col_names = TRUE)
+income_cty_10.df <- income_cty_10.df %>%
+  filter(`GEO.display-label` != "Minnesota", `GEO.display-label` != "Geography") %>%
+  mutate(CTYNAME = str_sub(`GEO.display-label`, 1 , str_length(`GEO.display-label`) - 18))
+length(unique(income_cty_10.df$CTYNAME))
+ncol(income_cty_10.df)
+YEAR = 2010
+income_cty_10.df <- cbind(income_cty_10.df, YEAR)
+
+
+#2008 #Why is there only 47 counties?
+income_cty_08.df <- read_csv("~/jvstats/County Income Estimates/ACS_08_3YR_S1901_with_ann.csv", col_names = TRUE)
+income_cty_08.df <- income_cty_08.df %>%
+  filter(`GEO.display-label` != "Minnesota", `GEO.display-label` != "Geography") %>%
+  mutate(CTYNAME = str_sub(`GEO.display-label`, 1 , str_length(`GEO.display-label`) - 18))
+length(unique(income_cty_08.df$CTYNAME))
+ncol(income_cty_08.df)
+YEAR = 2008
+income_cty_08.df <- cbind(income_cty_08.df, YEAR)
+
+
+#2006 #Why is there only 12 counties?
+income_cty_06.df <- read_csv("~/jvstats/County Income Estimates/ACS_06_EST_S1901_with_ann.csv", col_names = TRUE)
+income_cty_06.df <- income_cty_06.df %>%
+  filter(`GEO.display-label` != "Minnesota", `GEO.display-label` != "Geography") %>%
+  mutate(CTYNAME = str_sub(`GEO.display-label`, 1 , str_length(`GEO.display-label`) - 18))
+length(unique(income_cty_06.df$CTYNAME))
+ncol(income_cty_06.df)
+YEAR = 2006
+income_cty_06.df <- cbind(income_cty_06.df, YEAR)
+
+#2017
+income_cty_17.df <- read_csv("~/jvstats/County Income Estimates/ACS_17_1YR_S1901_with_ann.csv")
+income_cty_17.df <- income_cty_17.df %>%
+  filter(`GEO.display-label` != "Minnesota", `GEO.display-label` != "Geography") %>%
+  mutate(CTYNAME = str_sub(`GEO.display-label`, 1 , str_length(`GEO.display-label`) - 18))
+length(unique(income_cty_17.df$CTYNAME))
+ncol(income_cty_17.df)
+YEAR = 2017
+income_cty_17.df <- cbind(income_cty_17.df, YEAR)
+
+
+#check # 06 and 08 have the same variable name, 10 and 12 and 14 have the same variable name
+#colnames(income_cty_06.df) == colnames(income_cty_08.df)
+#colnames(income_cty_06.df) == colnames(income_cty_10.df)
+#colnames(income_cty_06.df) == colnames(income_cty_12.df)
+#colnames(income_cty_10.df) == colnames(income_cty_12.df)
+#colnames(income_cty_12.df) == colnames(income_cty_14.df)
+#colnames(income_cty_16.df) == colnames(income_cty_06.df)
+#colnames(income_cty_17.df) == colnames(income_cty_10.df)
+
+#looked through the dataset and the column name difference doesn't really matter
+
+#Combine datasets (except for 2016 because it has many more variables)
+colnames(income_cty_06.df) <- colnames(income_cty_14.df)
+colnames(income_cty_08.df) <- colnames(income_cty_14.df)
+colnames(income_cty_10.df) <- colnames(income_cty_14.df)
+colnames(income_cty_12.df) <- colnames(income_cty_14.df)
+colnames(income_cty_17.df) <- colnames(income_cty_14.df)
+
+income_cty.df <- income_cty_17.df %>%
+  rbind(income_cty_16.df) %>%
+  rbind(income_cty_14.df) %>%
+  rbind(income_cty_12.df) %>%
+  rbind(income_cty_10.df) %>%
+  rbind(income_cty_08.df) %>%
+  rbind(income_cty_06.df) %>%
+  mutate(CTYNAME = str_to_lower(CTYNAME),
+         YEAR = as.numeric(YEAR))
+head(income_cty.df)
+#write_excel_csv(income_cty.df, "~/jvstats/NEW_DATA/EXPORTED_DATA/income.csv")
+
+```

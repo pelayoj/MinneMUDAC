@@ -1,0 +1,42 @@
+---
+title: "MYKHE_EDA_102618"
+author: "My Khe"
+date: "10/26/2018"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+My main discovery is that social capital might have negative effect on voter turnout for Minnesota. Let's look at the graph below.  
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(readr)
+library(ggplot2)
+library(png)
+```
+
+```{r}
+final <- read_csv("~/jvstats/finaldataset.csv")
+ggplot(final, aes(x=SOCIALCAP.assn2014, y=log(TOTVOTERS))) +
+  geom_point() + facet_wrap(~YEAR) + geom_smooth(method = "lm") + 
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    panel.background = element_blank()) + 
+  labs(x="Associations", y= "Log of Total Votes")
+```
+
+*1. Explain the graph: * Please refer to Social Capital Codebook for more details.   
+The x-axis is called Associations. This is "the aggregate for all of above variables divided by population per 1,000", so a type of index that reflect the number of different types of social organizations (Business, Civic, Religious, Bowling, etc.) in a county. The higher, the more organizations.   
+The y-axis is the log of total votes casted.   
+*2. Interpretation:* I tried a linear regression model and the negative relationship remains significant, so increase in the number of social organizations might be associated with lower turnout.   
+The common sense is that the more civic engagement a community has, the higher voter turnout is. However, this is not always true. There are contrasting theories regarding first, how to operationalize social capital and second, the effect it has on voter turnout. Some of the reasons for a negative association are:   
+a. Time is a limited resource. Involvement in these organizations begets civic engagement by voting.   
+b. Exposure to conflicting views. "Mutz (2002) finds that an individual’s exposure to conflicting political opinions is negatively correlated with voting and political participation."   
+c. Personal satisfaction. "Previous theories suggest that voters derive satisfaction from political participation (Riker and 5 Ordeshook, 1968). However, voting is only one form of participation that generates this sense of fulfillment. Perhaps community involvement also creates the same sense of satisfaction that one typically derives from voting."  
+Additionally, as we can see in the map below, this social capital variable is associated with rural and poor areas. This further complicates its effect on voter turnout. 
+In short, I think this is an interesting variable to include in our model and we should expect a negative effect and some interaction terms.   
+

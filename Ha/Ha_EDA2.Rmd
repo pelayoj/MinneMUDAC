@@ -1,0 +1,383 @@
+---
+title: "Ha_EDA2"
+author: "Thu Ha Nguyen"
+date: "10/28/2018"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+Variables used:
+- unemployment rate
+- # of households (maybe not)
+- median household income
+- percent poor household (<$10,000)
+- bachelor degree
+
+Variables used if presidential year included:
+- employment rate (with interaction)
+- unemployment rate 
+- in labor force (with interaction)
+- # of household (with interaction)
+- median household income (with interaction)
+- percent poor household (<$10,000) (with interaction)
+- bachelor degree (with interaction)
+
+```{r}
+library(tidyverse)
+library(readr)
+library(ggplot2)
+```
+
+
+```{r}
+final_county <- read_csv("~/jvstats/final_county.csv")
+nrow(final_county)
+ncol(final_county)
+
+simpleCap <- function(x) {
+  s <- strsplit(x, " ")[[1]]
+  paste(toupper(substring(s, 1,1)), substring(s, 2),
+      sep="", collapse=" ")
+}
+
+
+final_county_tableau <- final_county %>%
+  mutate(County = simpleCap(CTYNAME),
+         State = "Minnesota")
+
+#write_excel_csv(final_county_tableau, "~/jvstats/tableau_county.csv")
+
+fips.df <- read_excel("~/jvstats/NEW_DATA/all-geocodes-v2016.xlsx", skip = 4, col_names = TRUE)
+head(fips.df)
+fips.df <- fips.df %>%
+  filter(`State Code (FIPS)` == "27") %>%
+  filter(`County Code (FIPS)` != "000") %>%
+  filter(str_sub(`Area Name (including legal/statistical area description)`, -6, -1) == "County") %>%
+  mutate(CTYNAME = str_to_lower(str_sub(`Area Name (including legal/statistical area description)`, 1, str_length(`Area Name (including legal/statistical area description)`) - 7)))
+head(fips.df)
+View(fips.df)
+#write_excel_csv(fips.df, "~/jvstats/NEW_DATA/EXPORTED_DATA/fips.csv")
+nrow(fips.df)
+```
+
+#EDA voterpercent
+```{r}
+final_county %>%
+  ggplot(aes(x=VOTEPERCENT)) +
+    geom_histogram() + facet_wrap(~MIDTERM) 
+
+final_county %>%
+  ggplot(aes(x=VOTEPERCENT)) +
+    geom_histogram() + facet_wrap(~YEAR) 
+```
+
+#visualization for congressional district
+```{r}
+turnout_pct <- read_csv("~/jvstats/NEW_DATA/EXPORTED_DATA/turnout_pct.csv")
+turnout_district <- turnout_pct %>%
+  filter(!is.na(TOTVOTERS)) %>%
+  group_by(CONGDIST, YEAR) %>%
+  summarize(VOTE = sum(TOTVOTERS))
+head(turnout_pct)
+ggplot(data=turnout_district, aes(x=YEAR, y=VOTE, color=as.factor(CONGDIST))) +
+    geom_line()
+# Congressional districts have relatively equal population. The persistent difference in voter turnout suggests some persistent difference in socio-economic-political factors in these districts. 
+ggplot(data=final_county, aes(x=YEAR, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_line()
+
+```
+#EDA with occupation
+```{r}
+
+ggplot(data=final_county, aes(x=`OCC.Agriculture`, y=VOTEPERCENT, color=as.factor(CTYNAME))) +geom_point() + facet_wrap(~YEAR) +xlab("Agriculture")
+ggplot(data=final_county, aes(x=`OCC.Agriculture`, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("Agriculture")
+
+summary(lm(VOTEPERCENT~as.numeric(`OCC.Agriculture`), data = final_county))
+summary(lm(VOTEPERCENT~as.numeric(`OCC.Agriculture`), data=subset(final_county,MIDTERM==1)))
+
+```
+
+
+```{r}
+ggplot(data=final_county, aes(x=`OCC.Transportation`, y=VOTEPERCENT, color=as.factor(CTYNAME))) +geom_point() + facet_wrap(~YEAR) +xlab("transportation")
+ggplot(data=final_county, aes(x=`OCC.Transportation`, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("transportation")
+
+summary(lm(VOTEPERCENT~OCC.Transportation, data = final_county))
+summary(lm(VOTEPERCENT~OCC.Transportation, data=subset(final_county,MIDTERM==1)))
+
+```
+
+```{r}
+ggplot(data=final_county, aes(x=`OCC.WholesaleTrade`, y=VOTEPERCENT, color=as.factor(CTYNAME))) +geom_point() + facet_wrap(~YEAR) +xlab("transportation")
+ggplot(data=final_county, aes(x=`OCC.WholesaleTrade`, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("transportation")
+
+summary(lm(VOTEPERCENT~OCC.WholesaleTrade, data = final_county))
+summary(lm(VOTEPERCENT~OCC.WholesaleTrade, data=subset(final_county,MIDTERM==1)))
+
+```
+
+#EDA with employment
+```{r}
+#final_county$EMPLOY.HC03_EST_VC01 guessing this is percentage?
+ggplot(data=final_county, aes(x=`EMPLOY.HC03_EST_VC01`, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("Employed; Estimate; Population 16 years and over")
+ggplot(data=final_county, aes(x=`EMPLOY.HC03_EST_VC01`, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("Employed; Estimate; Population 16 years and over")
+#comment: unclear relationship for midterm election, negative rela for presidential election
+#explanation: maybe unemployment policy doesn't matter in midterm election
+
+summary(lm(VOTEPERCENT~`EMPLOY.HC03_EST_VC01`*MIDTERM, data = final_county))
+summary(lm(VOTEPERCENT~`EMPLOY.HC03_EST_VC01`, data=subset(final_county,MIDTERM==1)))
+
+```
+
+```{r}
+ggplot(data=final_county, aes(x=`EMPLOY.HC04_EST_VC01`, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("Unemployed; Estimate; Population 16 years and over")
+ggplot(data=final_county, aes(x=`EMPLOY.HC04_EST_VC01`, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("Unemployed; Estimate; Population 16 years and over")
+#comment:slight negative rela for midterm election, more negative rela for presidential one
+
+summary(lm(VOTEPERCENT~`EMPLOY.HC04_EST_VC01`*MIDTERM, data = final_county))
+summary(lm(VOTEPERCENT~`EMPLOY.HC04_EST_VC01`, data=subset(final_county,MIDTERM==1)))
+```
+
+```{r}
+#final_county$EMPLOY.HC02_EST_VC01 this is also rate right?
+ggplot(data=final_county, aes(x=`EMPLOY.HC02_EST_VC01`, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("In labor force; Estimate; Population 16 years and over")
+ggplot(data=final_county, aes(x=`EMPLOY.HC02_EST_VC01`, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("In labor force; Estimate; Population 16 years and over")
+#comment: seems to be no relationship for midterm election, but positive rela for presidential one
+
+summary(lm(VOTEPERCENT~`EMPLOY.HC02_EST_VC01`*MIDTERM, data = final_county))
+summary(lm(VOTEPERCENT~`EMPLOY.HC02_EST_VC01`, data=subset(final_county,MIDTERM==1)))
+```
+
+
+
+#EDA with income
+- question: what to use: households, families?
+```{r}
+#final_county$INCOME.HC01_EST_VC01 don't understand what this variable mean, defintely not rate
+#final_county$INCOME.HC01_EST_VC01
+ggplot(data=final_county, aes(x=log(`INCOME.HC01_EST_VC01`), y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("Households; Estimate; Total (log scale)")
+ggplot(data=final_county, aes(x=log(`INCOME.HC01_EST_VC01`), y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("Households; Estimate; Total (log scale)")
+
+summary(lm(VOTEPERCENT~`INCOME.HC01_EST_VC01`*MIDTERM, data = final_county))
+summary(lm(VOTEPERCENT~`INCOME.HC01_EST_VC01`, data=subset(final_county,MIDTERM==1)))
+```
+
+
+```{r}
+#final_county$INCOME.HC01_EST_VC13
+ggplot(data=final_county, aes(x=INCOME.HC01_EST_VC13, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("Households; Estimate; Median income (dollars)")
+ggplot(data=final_county, aes(x=INCOME.HC01_EST_VC13, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("Households; Estimate; Median income (dollars)")
+#comment:positive relationship
+
+summary(lm(VOTEPERCENT~INCOME.HC01_EST_VC13*MIDTERM, data = final_county))
+summary(lm(VOTEPERCENT~`INCOME.HC01_EST_VC13`, data=subset(final_county,MIDTERM==1)))
+```
+
+```{r}
+#final_county$INCOME.HC01_EST_VC02 this is rate right?
+ggplot(data=final_county, aes(x=INCOME.HC01_EST_VC02, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("Households; Estimate; Less than $10,000")
+ggplot(data=final_county, aes(x=INCOME.HC01_EST_VC02, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("Households; Estimate; Less than $10,000")
+#comment: negative relation between votepercent and poor households (does < $10,000 count as poor?)
+
+summary(lm(VOTEPERCENT~INCOME.HC01_EST_VC02*MIDTERM, data = final_county))
+summary(lm(VOTEPERCENT~`INCOME.HC01_EST_VC02`, data=subset(final_county,MIDTERM==1)))
+```
+##don't understand what this variable means
+```{r}
+#final_county$INCOME.HC01_EST_VC18 What does this variable mean?
+ggplot(data=final_county, aes(x=INCOME.HC01_EST_VC18, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("Households; Estimate; PERCENT IMPUTED - Household income in the past 12 months")
+ggplot(data=final_county, aes(x=INCOME.HC01_EST_VC18, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("Households; Estimate; PERCENT IMPUTED - Household income in the past 12 months")
+#comment: negative relationship
+
+summary(lm(VOTEPERCENT~INCOME.HC01_EST_VC18*MIDTERM, data = final_county))
+summary(lm(VOTEPERCENT~`INCOME.HC01_EST_VC18`, data=subset(final_county,MIDTERM==1)))
+```
+
+#EDA with education
+```{r}
+ggplot(data=final_county, aes(x=`BACHELOR'S DEGREE >25`, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("Bachelor Degree >25")
+ggplot(data=final_county, aes(x=`BACHELOR'S DEGREE >25`, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("Bachelor degree >25")
+#comment: positive rela
+
+summary(lm(VOTEPERCENT~`BACHELOR'S DEGREE >25`*MIDTERM, data = final_county))
+summary(lm(VOTEPERCENT~`BACHELOR'S DEGREE >25`, data=subset(final_county,MIDTERM==1)))
+```
+
+```{r}
+ggplot(data=final_county, aes(x=`BACHELOR'S DEGREE`, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("Bachelor Degree")
+ggplot(data=final_county, aes(x=`BACHELOR'S DEGREE`, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("Bachelor degree")
+#comment: positive rela
+
+summary(lm(VOTEPERCENT~`BACHELOR'S DEGREE`*MIDTERM, data = final_county))
+summary(lm(VOTEPERCENT~`BACHELOR'S DEGREE`, data=subset(final_county,MIDTERM==1)))
+```
+```{r}
+ggplot(data=final_county, aes(x=`HIGHSCHOOL DEGREE`, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("High school Degree")
+ggplot(data=final_county, aes(x=`HIGHSCHOOL DEGREE`, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("High school degree")
+#comment: negative rela for presidential year, not clear rela for midterm year
+
+summary(lm(VOTEPERCENT~`HIGHSCHOOL DEGREE`*MIDTERM, data = final_county))
+summary(lm(VOTEPERCENT~`HIGHSCHOOL DEGREE`, data=subset(final_county,MIDTERM==1)))
+```
+
+
+```{r}
+ggplot(data=final_county, aes(x=`HIGHSCHOOL DEGREE >25`, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("High school Degree > 25")
+ggplot(data=final_county, aes(x=`HIGHSCHOOL DEGREE >25`, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("High school degree > 25")
+#comment: negative rela for presidential year, not clear rela for midterm year
+
+summary(lm(VOTEPERCENT~`HIGHSCHOOL DEGREE >25`*MIDTERM, data = final_county))
+summary(lm(VOTEPERCENT~`HIGHSCHOOL DEGREE >25`, data=subset(final_county,MIDTERM==1)))
+
+summary(lm(VOTEPERCENT~`HIGHSCHOOL DEGREE` + `BACHELOR'S DEGREE` + `GRADUATE DEGREE >25`, data=subset(final_county,MIDTERM==1)))
+
+```
+```{r}
+ggplot(data=final_county, aes(x=`GRADUATE DEGREE >25`, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("Graduate Degree > 25")
+ggplot(data=final_county, aes(x=`GRADUATE DEGREE >25`, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("Graduate degree > 25")
+#comment: positive rela for presidential year, but not clear rela for midterm year (this is surprising?)
+
+summary(lm(VOTEPERCENT~`GRADUATE DEGREE >25`*MIDTERM, data = final_county))
+summary(lm(VOTEPERCENT~`GRADUATE DEGREE >25`, data=subset(final_county,MIDTERM==1)))
+```
+
+
+#Sexage
+```{r}
+final_county <- final_county %>%
+  mutate(PercentMale = TOTALMALE/ POPULATION, 
+         PercentFemale = TOTALFEMALE/ POPULATION
+         )
+
+
+ggplot(data=final_county, aes(x=PercentMale, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("Percent Male")
+ggplot(data=final_county, aes(x=PercentMale, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("Percent Male")
+
+summary(lm(VOTEPERCENT~`PercentMale`*MIDTERM, data = final_county))
+summary(lm(VOTEPERCENT~`PercentMale`, data=subset(final_county,MIDTERM==1)))
+```
+```{r}
+
+ggplot(data=final_county, aes(x=PercentFemale, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("Percent Female")
+ggplot(data=final_county, aes(x=PercentFemale, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("Percent Female")
+
+summary(lm(VOTEPERCENT~`PercentFemale`*MIDTERM, data = final_county))
+summary(lm(VOTEPERCENT~`PercentFemale`, data=subset(final_county,MIDTERM==1)))
+```
+
+
+```{r}
+
+ggplot(data=final_county, aes(x=AGE2024_TOTAL, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("Age 20 24 total")
+ggplot(data=final_county, aes(x=AGE2024_TOTAL, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("Age 20 24 total")
+
+summary(lm(VOTEPERCENT~`AGE2024_TOTAL`*MIDTERM, data = final_county))
+summary(lm(VOTEPERCENT~`AGE2024_TOTAL`, data=subset(final_county,MIDTERM==1)))
+```
+
+```{r}
+
+ggplot(data=final_county, aes(x=AGE2024_MALE, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("Age 20 24 male")
+ggplot(data=final_county, aes(x=AGE2024_MALE, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("Age 20 24 male")
+
+summary(lm(VOTEPERCENT~`AGE2024_MALE`*MIDTERM, data = final_county))
+summary(lm(VOTEPERCENT~`AGE2024_MALE`, data=subset(final_county,MIDTERM==1)))
+```
+```{r}
+
+ggplot(data=final_county, aes(x=AGE2024_FEMALE, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("Age 20 24 female")
+ggplot(data=final_county, aes(x=AGE2024_FEMALE, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("Age 20 24 female")
+
+summary(lm(VOTEPERCENT~`AGE2024_FEMALE`*MIDTERM, data = final_county))
+summary(lm(VOTEPERCENT~`AGE2024_FEMALE`, data=subset(final_county,MIDTERM==1)))
+```
+
+```{r}
+
+ggplot(data=final_county, aes(x=AGE2529_TOTAL, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("Age 25 29 total")
+ggplot(data=final_county, aes(x=AGE2529_TOTAL, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("Age 25 29 total")
+
+summary(lm(VOTEPERCENT~`AGE2529_TOTAL`*MIDTERM, data = final_county))
+summary(lm(VOTEPERCENT~`AGE2529_TOTAL`, data=subset(final_county,MIDTERM==1)))
+```
+```{r}
+
+ggplot(data=final_county, aes(x=AGE2529_MALE, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("Age 25 29 male")
+ggplot(data=final_county, aes(x=AGE2529_MALE, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("Age 25 29 male")
+
+summary(lm(VOTEPERCENT~`AGE2529_MALE`*MIDTERM, data = final_county))
+summary(lm(VOTEPERCENT~`AGE2529_MALE`, data=subset(final_county,MIDTERM==1)))
+```
+```{r}
+
+ggplot(data=final_county, aes(x=AGE2529_FEMALE, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("Age 25 29 female")
+ggplot(data=final_county, aes(x=AGE2529_FEMALE, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("Age 25 29 female")
+
+summary(lm(VOTEPERCENT~`AGE2529_FEMALE`*MIDTERM, data = final_county))
+summary(lm(VOTEPERCENT~`AGE2529_FEMALE`, data=subset(final_county,MIDTERM==1)))
+```
+
+###Interactions
+
+```{r}
+demographics <- demographics[complete.cases(demographics), ]
+
+demographics <- demographics %>%
+  mutate(highwhite = ifelse(percent_white >0.94, 1, 0), highblack = ifelse(percent_black >.007514032, 1, 0) )
+
+```
+
+```{r}
+#final_county$INCOME.HC01_EST_VC13
+ggplot(data=final_county, aes(x=INCOME.HC01_EST_VC13, y=VOTEPERCENT, color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR) +xlab("Households; Estimate; Median income (dollars)")
+ggplot(data=final_county, aes(x=INCOME.HC01_EST_VC13, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~MIDTERM) + xlab("Households; Estimate; Median income (dollars)")
+#comment:positive relationship
+```

@@ -1,0 +1,63 @@
+---
+title: "Ha_graphs"
+author: "Thu Ha Nguyen"
+date: "11/1/2018"
+output: html_document
+---
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(lme4)
+
+final_county <- read_csv("~/jvstats/final_county.csv")
+```
+
+#total turnout by congressional district
+```{r}
+turnout_pct <- read_csv("~/jvstats/NEW_DATA/EXPORTED_DATA/turnout_pct.csv")
+turnout_district <- turnout_pct %>%
+  filter(!is.na(TOTVOTERS)) %>%
+  group_by(CONGDIST, YEAR, MIDTERM) %>%
+  summarize(VOTE = sum(TOTVOTERS)) %>%
+  mutate(MIDTERM2 = ifelse(MIDTERM == 1, "Midterm Year", "Presidential Year"))
+ggplot(data=subset(turnout_district, MIDTERM==1), aes(x=YEAR, y=VOTE, color=as.factor(CONGDIST))) +
+    geom_line() + ylab("Total Voter Turnout") + labs(color = "Congressional District") + xlab("Year (midterm election only)")
+ggplot(data=subset(turnout_district, MIDTERM==0), aes(x=YEAR, y=VOTE, color=as.factor(CONGDIST))) +
+    geom_line() + ylab("Total Voter Turnout") + labs(color = "Congressional District") + xlab("Year (presidential election only)")
+```
+#Young age
+```{r}
+ggplot(data=subset(final_county, YEAR > 2008), aes(x=AGE2024_TOTAL, y=VOTEPERCENT, color=as.factor(YEAR))) +
+    geom_point() + geom_smooth(method="lm", se=FALSE, fullrange=TRUE) +xlab("Percent of Population at 20-24 years old") + ylab("Percent of Voter Turnout") + labs(color = "Year") 
+```
+#Percent Female
+```{r}
+final_county <- final_county %>%
+  mutate(PercentMale = TOTALMALE/ POPULATION, 
+         PercentFemale = TOTALFEMALE/ POPULATION,
+         MedianIcomeThousand = INCOME.HC01_EST_VC13/1000
+         )
+ggplot(data=subset(final_county, YEAR > 2008), aes(x=PercentFemale, y=VOTEPERCENT, color=as.factor(YEAR))) +
+    geom_point() + geom_smooth(method="lm",se=FALSE, fullrange=TRUE) +xlab("Percent of Female") + ylab("Percent of Voter Turnout") + labs(color = "Year") 
+
+```
+#Income (by county)
+```{r}
+ggplot(data=final_county, aes(x=MedianIcomeThousand, y=VOTEPERCENT)) +
+    geom_point() + facet_wrap(~CTYNAME) +xlab("Median Households Income (thousand dollars)") + ylab("Percent Voter Turnout")
+```
+
+#education
+```{r}
+ggplot(data=subset(final_county, YEAR > 2008), aes(x=`BACHELOR'S DEGREE`, y=VOTEPERCENT, color=as.factor(YEAR))) +
+    geom_point() + geom_smooth(method="lm", se=FALSE, fullrange=TRUE) +xlab("Percent of Population with Bachelor Degree as the highest education")+ ylab("Percent Voter Turnout") + labs(color = "Year") 
+
+```
+
+#employment
+```{r}
+ggplot(data=subset(final_county, YEAR > 2008), aes(x=`EMPLOY.HC04_EST_VC01`, y=VOTEPERCENT, color=as.factor(YEAR))) +
+    geom_point() + geom_smooth(method="lm", se=FALSE, fullrange=TRUE) +xlab("Unemployment rate among Population 16 years and over")+ ylab("Percent Voter Turnout") + labs(color = "Year") 
+```

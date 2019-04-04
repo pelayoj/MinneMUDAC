@@ -1,0 +1,150 @@
+---
+title: "Ha_predict"
+author: "Thu Ha Nguyen"
+date: "11/1/2018"
+output: html_document
+---
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(lme4)
+
+final_county <- read_csv("~/jvstats/final_county.csv")
+```
+
+#Congressional district stuff
+```{r}
+turnout_pct <- read_csv("~/jvstats/NEW_DATA/EXPORTED_DATA/turnout_pct.csv")
+turnout_pct2016 <- turnout_pct %>%
+  filter(YEAR == 2016)
+turnout_pct2016[1, 5] = 1000
+head(turnout_pct2016) 
+for (i in unique(turnout_pct2016$CTYNAME)) {
+  subdata = subset(turnout_pct2016, CTYNAME == i)
+  num_dist = length(unique(subdata$CONGDIST))
+  if (num_dist > 1) {
+    print(i)
+    print(num_dist)
+  }
+  
+}
+```
+```{r}
+turnout_pct <- read_csv("~/jvstats/NEW_DATA/EXPORTED_DATA/turnout_pct.csv")
+anoka <- turnout_pct %>%
+  filter(CTYNAME == "anoka", YEAR == 2016) %>%
+  group_by(CONGDIST) %>%
+  summarise(
+    TOTALVOTE16 = sum(TOTVOTERS)
+  ) %>%
+  mutate(percent = TOTALVOTE16/sum(TOTALVOTE16),
+         CTYNAME = "anoka")
+
+beltrami <- turnout_pct %>%
+  filter(CTYNAME == "beltrami", YEAR == 2016) %>%
+  group_by(CONGDIST) %>%
+  summarise(
+    TOTALVOTE16 = sum(TOTVOTERS)
+  ) %>%
+  mutate(percent = TOTALVOTE16/sum(TOTALVOTE16),
+                  CTYNAME = "beltrami")
+
+
+carver <- turnout_pct %>%
+  filter(CTYNAME == "carver", YEAR == 2016) %>%
+  group_by(CONGDIST) %>%
+  summarise(
+    TOTALVOTE16 = sum(TOTVOTERS)
+  ) %>%
+  mutate(percent = TOTALVOTE16/sum(TOTALVOTE16),
+         CTYNAME = "carver")
+
+
+cottonwood <- turnout_pct %>%
+  filter(CTYNAME == "cottonwood", YEAR == 2016) %>%
+  group_by(CONGDIST) %>%
+  summarise(
+    TOTALVOTE16 = sum(TOTVOTERS)
+  ) %>%
+  mutate(percent = TOTALVOTE16/sum(TOTALVOTE16),
+                  CTYNAME = "cottonwood")
+
+head(cottonwood)
+hennepin <- turnout_pct %>%
+  filter(CTYNAME == "hennepin", YEAR == 2016) %>%
+  group_by(CONGDIST) %>%
+  summarise(
+    TOTALVOTE16 = sum(TOTVOTERS)
+  ) %>%
+  mutate(percent = TOTALVOTE16/sum(TOTALVOTE16),
+         CTYNAME = "hennepin")
+head(hennepin)
+ramsey <- turnout_pct %>%
+  filter(CTYNAME == "ramsey", YEAR == 2016) %>%
+  group_by(CONGDIST) %>%
+  summarise(
+    TOTALVOTE16 = sum(TOTVOTERS)
+  ) %>%
+  mutate(percent = TOTALVOTE16/sum(TOTALVOTE16),
+         CTYNAME = "ramsey")
+head(ramsey)
+rice <- turnout_pct %>%
+  filter(CTYNAME == "rice", YEAR == 2016) %>%
+  group_by(CONGDIST) %>%
+  summarise(
+    TOTALVOTE16 = sum(TOTVOTERS)
+  ) %>%
+  mutate(percent = TOTALVOTE16/sum(TOTALVOTE16),
+         CTYNAME = "rice")
+head(rice)
+stearns <- turnout_pct %>%
+  filter(CTYNAME == "stearns", YEAR == 2016) %>%
+  group_by(CONGDIST) %>%
+  summarise(
+    TOTALVOTE16 = sum(TOTVOTERS)
+  ) %>%
+  mutate(percent = TOTALVOTE16/sum(TOTALVOTE16),
+         CTYNAME = "stearns")
+head(stearns)
+washington <- turnout_pct %>%
+  filter(CTYNAME == "washington", YEAR == 2016) %>%
+  group_by(CONGDIST) %>%
+  summarise(
+    TOTALVOTE16 = sum(TOTVOTERS)
+  ) %>%
+  mutate(percent = TOTALVOTE16/sum(TOTALVOTE16),
+         CTYNAME = "washington")
+head(washington)
+weirdcounty <- anoka %>%
+  rbind(beltrami) %>%
+  rbind(carver) %>%
+  rbind(cottonwood) %>%
+  rbind(hennepin) %>%
+  rbind(ramsey) %>%
+  rbind(rice) %>%
+  rbind(stearns) %>%
+  rbind(washington) %>%
+  select(-TOTALVOTE16)
+View(weirdcounty)
+
+predicted_data <- read_csv("~/jvstats/predicted_data.csv")
+predicted_data <- predicted_data %>%
+  select(CTYNAME, Vote_Number)
+head(predicted_data)
+
+weirdcounty <- weirdcounty %>%
+  left_join(predicted_data, by = c("CTYNAME")) %>%
+  mutate(TOTVOTERS = percent*Vote_Number) %>%
+  select(CONGDIST, CTYNAME, TOTVOTERS)
+head(weirdcounty)
+```
+#Predict code
+```{r}
+predicted_data <- read_csv("~/jvstats/predicted_data.csv")
+predicted_data <- predicted_data %>%
+  mutate(State = "Minnesota")
+#write.csv(predicted_data, "~/jvstats/predicted_data2.csv")
+```
+

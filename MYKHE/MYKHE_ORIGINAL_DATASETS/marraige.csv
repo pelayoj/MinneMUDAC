@@ -1,0 +1,175 @@
+"","CTYNAME","Percent Married","Percent Divorced","YEAR"
+"1","Aitkin County, Minnesota","63.8","12.0",2010
+"2","Anoka County, Minnesota","56.6","9.7",2010
+"3","Becker County, Minnesota","58.5","10.6",2010
+"4","Beltrami County, Minnesota","49.8","9.0",2010
+"5","Benton County, Minnesota","54.0","8.0",2010
+"6","Big Stone County, Minnesota","61.7","6.4",2010
+"7","Blue Earth County, Minnesota","43.8","7.5",2010
+"8","Brown County, Minnesota","56.0","9.5",2010
+"9","Carlton County, Minnesota","56.4","10.3",2010
+"10","Carver County, Minnesota","64.4","7.4",2010
+"11","Cass County, Minnesota","62.8","9.5",2010
+"12","Chippewa County, Minnesota","53.6","11.5",2010
+"13","Chisago County, Minnesota","59.4","9.9",2010
+"14","Clay County, Minnesota","50.8","8.1",2010
+"15","Clearwater County, Minnesota","59.8","8.4",2010
+"16","Cook County, Minnesota","65.3","12.9",2010
+"17","Cottonwood County, Minnesota","60.1","8.0",2010
+"18","Crow Wing County, Minnesota","59.8","10.5",2010
+"19","Dakota County, Minnesota","57.1","10.0",2010
+"20","Dodge County, Minnesota","63.1","8.6",2010
+"21","Douglas County, Minnesota","61.1","9.2",2010
+"22","Faribault County, Minnesota","57.7","8.8",2010
+"23","Fillmore County, Minnesota","60.5","8.7",2010
+"24","Freeborn County, Minnesota","57.7","9.4",2010
+"25","Goodhue County, Minnesota","59.7","9.8",2010
+"26","Grant County, Minnesota","59.9","8.3",2010
+"27","Hennepin County, Minnesota","47.5","9.6",2010
+"28","Houston County, Minnesota","59.6","9.4",2010
+"29","Hubbard County, Minnesota","62.5","10.6",2010
+"30","Isanti County, Minnesota","59.2","9.6",2010
+"31","Itasca County, Minnesota","60.8","10.4",2010
+"32","Jackson County, Minnesota","63.4","7.8",2010
+"33","Kanabec County, Minnesota","57.7","10.6",2010
+"34","Kandiyohi County, Minnesota","58.4","7.4",2010
+"35","Kittson County, Minnesota","57.8","8.6",2010
+"36","Koochiching County, Minnesota","55.6","12.6",2010
+"37","Lac qui Parle County, Minnesota","64.1","7.9",2010
+"38","Lake County, Minnesota","60.2","10.7",2010
+"39","Lake of the Woods County, Minnesota","65.6","8.1",2010
+"40","Le Sueur County, Minnesota","59.2","8.9",2010
+"41","Lincoln County, Minnesota","62.4","6.3",2010
+"42","Lyon County, Minnesota","52.8","5.7",2010
+"43","McLeod County, Minnesota","60.5","8.8",2010
+"44","Mahnomen County, Minnesota","48.6","11.6",2010
+"45","Marshall County, Minnesota","64.4","7.1",2010
+"46","Martin County, Minnesota","58.5","9.4",2010
+"47","Meeker County, Minnesota","63.9","8.8",2010
+"48","Mille Lacs County, Minnesota","54.4","10.9",2010
+"49","Morrison County, Minnesota","57.6","9.1",2010
+"50","Mower County, Minnesota","54.3","10.4",2010
+"51","Murray County, Minnesota","63.5","6.6",2010
+"52","Nicollet County, Minnesota","50.8","7.6",2010
+"53","Nobles County, Minnesota","55.9","7.0",2010
+"54","Norman County, Minnesota","58.5","9.1",2010
+"55","Olmsted County, Minnesota","58.3","8.4",2010
+"56","Otter Tail County, Minnesota","61.1","8.5",2010
+"57","Pennington County, Minnesota","53.2","11.5",2010
+"58","Pine County, Minnesota","52.8","12.4",2010
+"59","Pipestone County, Minnesota","61.0","9.0",2010
+"60","Polk County, Minnesota","55.0","8.5",2010
+"61","Pope County, Minnesota","61.8","8.4",2010
+"62","Ramsey County, Minnesota","44.5","10.0",2010
+"63","Red Lake County, Minnesota","61.4","8.3",2010
+"64","Redwood County, Minnesota","58.6","9.0",2010
+"65","Renville County, Minnesota","59.4","7.3",2010
+"66","Rice County, Minnesota","50.5","8.8",2010
+"67","Rock County, Minnesota","60.5","8.1",2010
+"68","Roseau County, Minnesota","59.4","10.2",2010
+"69","St. Louis County, Minnesota","49.9","11.1",2010
+"70","Scott County, Minnesota","62.0","9.1",2010
+"71","Sherburne County, Minnesota","59.8","8.6",2010
+"72","Sibley County, Minnesota","60.3","8.6",2010
+"73","Stearns County, Minnesota","52.5","7.2",2010
+"74","Steele County, Minnesota","59.8","8.6",2010
+"75","Stevens County, Minnesota","48.6","7.2",2010
+"76","Swift County, Minnesota","56.4","8.9",2010
+"77","Todd County, Minnesota","62.7","9.0",2010
+"78","Traverse County, Minnesota","59.9","7.5",2010
+"79","Wabasha County, Minnesota","59.5","9.7",2010
+"80","Wadena County, Minnesota","57.8","10.9",2010
+"81","Waseca County, Minnesota","55.5","8.3",2010
+"82","Washington County, Minnesota","60.1","9.3",2010
+"83","Watonwan County, Minnesota","53.1","10.0",2010
+"84","Wilkin County, Minnesota","61.3","10.7",2010
+"85","Winona County, Minnesota","47.0","7.4",2010
+"86","Wright County, Minnesota","62.4","8.5",2010
+"87","Yellow Medicine County, Minnesota","60.3","6.9",2010
+"88","Aitkin County, Minnesota","62.2","11.5",2014
+"89","Anoka County, Minnesota","54.7","10.6",2014
+"90","Becker County, Minnesota","57.4","10.4",2014
+"91","Beltrami County, Minnesota","45.7","11.1",2014
+"92","Benton County, Minnesota","51.6","10.4",2014
+"93","Big Stone County, Minnesota","63.8","7.8",2014
+"94","Blue Earth County, Minnesota","45.5","6.8",2014
+"95","Brown County, Minnesota","54.1","9.7",2014
+"96","Carlton County, Minnesota","52.5","12.7",2014
+"97","Carver County, Minnesota","62.7","7.8",2014
+"98","Cass County, Minnesota","60.7","10.4",2014
+"99","Chippewa County, Minnesota","55.5","11.5",2014
+"100","Chisago County, Minnesota","57.1","10.8",2014
+"101","Clay County, Minnesota","49.2","8.6",2014
+"102","Clearwater County, Minnesota","59.3","10.5",2014
+"103","Cook County, Minnesota","62.4","12.3",2014
+"104","Cottonwood County, Minnesota","58.4","9.9",2014
+"105","Crow Wing County, Minnesota","57.1","11.4",2014
+"106","Dakota County, Minnesota","55.3","10.2",2014
+"107","Dodge County, Minnesota","59.2","9.8",2014
+"108","Douglas County, Minnesota","60.7","8.8",2014
+"109","Faribault County, Minnesota","57.5","10.3",2014
+"110","Fillmore County, Minnesota","59.8","9.1",2014
+"111","Freeborn County, Minnesota","52.2","11.4",2014
+"112","Goodhue County, Minnesota","55.8","11.5",2014
+"113","Grant County, Minnesota","60.3","10.3",2014
+"114","Hennepin County, Minnesota","46.8","10.0",2014
+"115","Houston County, Minnesota","57.9","8.3",2014
+"116","Hubbard County, Minnesota","62.2","10.7",2014
+"117","Isanti County, Minnesota","56.7","9.8",2014
+"118","Itasca County, Minnesota","57.6","11.3",2014
+"119","Jackson County, Minnesota","62.0","7.6",2014
+"120","Kanabec County, Minnesota","55.0","11.6",2014
+"121","Kandiyohi County, Minnesota","57.7","8.3",2014
+"122","Kittson County, Minnesota","54.7","9.6",2014
+"123","Koochiching County, Minnesota","55.1","11.0",2014
+"124","Lac qui Parle County, Minnesota","61.5","8.8",2014
+"125","Lake County, Minnesota","61.8","11.5",2014
+"126","Lake of the Woods County, Minnesota","57.8","10.2",2014
+"127","Le Sueur County, Minnesota","59.3","8.6",2014
+"128","Lincoln County, Minnesota","58.8","7.7",2014
+"129","Lyon County, Minnesota","50.8","7.7",2014
+"130","McLeod County, Minnesota","58.4","8.4",2014
+"131","Mahnomen County, Minnesota","46.6","10.7",2014
+"132","Marshall County, Minnesota","60.6","9.3",2014
+"133","Martin County, Minnesota","56.1","9.9",2014
+"134","Meeker County, Minnesota","62.0","8.9",2014
+"135","Mille Lacs County, Minnesota","52.4","12.8",2014
+"136","Morrison County, Minnesota","57.1","9.5",2014
+"137","Mower County, Minnesota","53.3","10.5",2014
+"138","Murray County, Minnesota","61.7","9.3",2014
+"139","Nicollet County, Minnesota","50.7","9.0",2014
+"140","Nobles County, Minnesota","54.1","7.1",2014
+"141","Norman County, Minnesota","55.4","10.8",2014
+"142","Olmsted County, Minnesota","55.6","9.4",2014
+"143","Otter Tail County, Minnesota","61.1","9.0",2014
+"144","Pennington County, Minnesota","50.2","10.5",2014
+"145","Pine County, Minnesota","52.6","13.6",2014
+"146","Pipestone County, Minnesota","59.2","9.5",2014
+"147","Polk County, Minnesota","53.2","9.8",2014
+"148","Pope County, Minnesota","61.7","8.8",2014
+"149","Ramsey County, Minnesota","44.1","10.3",2014
+"150","Red Lake County, Minnesota","57.8","8.9",2014
+"151","Redwood County, Minnesota","55.8","10.9",2014
+"152","Renville County, Minnesota","58.0","9.5",2014
+"153","Rice County, Minnesota","50.0","8.9",2014
+"154","Rock County, Minnesota","58.8","9.4",2014
+"155","Roseau County, Minnesota","59.0","10.0",2014
+"156","St. Louis County, Minnesota","47.8","11.9",2014
+"157","Scott County, Minnesota","61.2","8.9",2014
+"158","Sherburne County, Minnesota","58.1","9.4",2014
+"159","Sibley County, Minnesota","58.0","7.6",2014
+"160","Stearns County, Minnesota","50.2","7.9",2014
+"161","Steele County, Minnesota","56.3","10.8",2014
+"162","Stevens County, Minnesota","51.1","7.8",2014
+"163","Swift County, Minnesota","57.9","8.5",2014
+"164","Todd County, Minnesota","58.9","9.6",2014
+"165","Traverse County, Minnesota","61.3","8.9",2014
+"166","Wabasha County, Minnesota","61.4","9.5",2014
+"167","Wadena County, Minnesota","53.5","12.7",2014
+"168","Waseca County, Minnesota","57.3","8.9",2014
+"169","Washington County, Minnesota","58.0","9.5",2014
+"170","Watonwan County, Minnesota","56.5","8.2",2014
+"171","Wilkin County, Minnesota","58.4","11.2",2014
+"172","Winona County, Minnesota","45.5","7.1",2014
+"173","Wright County, Minnesota","60.4","8.9",2014
+"174","Yellow Medicine County, Minnesota","58.7","8.1",2014

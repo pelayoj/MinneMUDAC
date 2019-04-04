@@ -1,0 +1,176 @@
+---
+title: "Mykhe_MergedData"
+author: "My Khe"
+date: "10/20/2018"
+output: html_document
+---
+
+```{r}
+library(dplyr)
+```
+
+```{r}
+library(readr)
+library(readxl)
+library(tidyverse)
+library(stringr)
+```
+
+Population
+```{r}
+population14 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/POPULATION/ACS_14_5YR_B01003_with_ann.csv")
+#colnames(population14) <- as.character(unlist(population14[1,]))
+population14 <- population14[-1, ]
+population14 <- population14 %>%
+  mutate(YEAR = 2014)
+population14 <- population14[ , -c(1,2,5)]
+
+population10 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/POPULATION/ACS_10_5YR_B01003_with_ann.csv")
+#colnames(population10) <- as.character(unlist(population10[1,]))
+population10 <- population10[-1, ]
+population10 <- population10 %>%
+  mutate(YEAR = 2010)
+population10 <- population10[ , -c(1,2,5)]
+
+population <- rbind(population14, population10)
+colnames(population) <- c("CTYNAME", "POPULATION", "YEAR")
+write.csv(population, file="population.csv")
+```
+
+```{r}
+#More Population
+population17 <- read_csv("/home/jvstats/NEW_DATA/DEMOGRAPHICS_SUPPLEMENTAL/POPULATION/ACS_17_1YR_B01003_with_ann.csv")
+View(population17)
+#colnames(population10) <- as.character(unlist(population10[1,]))
+population17 <- population17[-1, ]
+population17 <- population17 %>%
+  mutate(YEAR = 2017)
+population17 <- population17[ , -c(1,2,5)]
+
+population16 <- read_csv("/home/jvstats/NEW_DATA/DEMOGRAPHICS_SUPPLEMENTAL/POPULATION/ACS_16_5YR_B01003_with_ann.csv")
+View(population16)
+#colnames(population10) <- as.character(unlist(population10[1,]))
+population16 <- population16[-1, ]
+population16 <- population16 %>%
+  mutate(YEAR = 2016)
+population16 <- population16[ , -c(1,2,5)]
+
+population12 <- read_csv("/home/jvstats/NEW_DATA/DEMOGRAPHICS_SUPPLEMENTAL/POPULATION/ACS_12_5YR_B01003_with_ann.csv")
+View(population12)
+#colnames(population10) <- as.character(unlist(population10[1,]))
+population12 <- population12[-1, ]
+population12 <- population12 %>%
+  mutate(YEAR = 2012)
+population12 <- population12[ , -c(1,2,5)]
+
+population08 <- read_csv("/home/jvstats/NEW_DATA/DEMOGRAPHICS_SUPPLEMENTAL/POPULATION/ACS_08_1YR_B01003_with_ann.csv")
+View(population08)
+#colnames(population10) <- as.character(unlist(population10[1,]))
+population08 <- population08[-1, ]
+population08 <- population08 %>%
+  mutate(YEAR = 2008)
+population08 <- population08[ , -c(1,2,5)]
+
+population06 <- read_csv("/home/jvstats/NEW_DATA/DEMOGRAPHICS_SUPPLEMENTAL/POPULATION/ACS_06_EST_B01003_with_ann.csv")
+View(population06)
+#colnames(population10) <- as.character(unlist(population10[1,]))
+population06 <- population06[-1, ]
+population06 <- population06 %>%
+  mutate(YEAR = 2006)
+population06 <- population06[ , -c(1,2,5)]
+
+populationEXTRA <- rbind(population06, population08, population12, population16, 
+                         population17)
+View(populationEXTRA)
+colnames(populationEXTRA) <- c("CTYNAME", "POPULATION", "YEAR")
+```
+
+```{r}
+race14 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/RACE/ACS_14_5YR_B02001_with_ann.csv")
+#colnames(race14) <- as.character(unlist(race14[1,]))
+race14 <- race14[ ,-c(1,2, 4,5, 7, 9, 11, 13, 15, 17:23) ]
+race14 <- race14 %>%
+  mutate(YEAR = 2014) 
+colnames(race14) <- c("CTYNAME", "WHITE", "BLACK", "INDIAN", "ASIAN", "HAWAIIAN", "OTHERS", "YEAR")
+race14 <- race14[-1,]
+
+race10 <- read_csv("~/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/RACE/ACS_14_5YR_B02001_with_ann.csv")
+#colnames(race14) <- as.character(unlist(race14[1,]))
+race10 <- race10[ ,-c(1,2, 4,5, 7, 9, 11, 13, 15, 17:23) ]
+race10 <- race10 %>%
+  mutate(YEAR = 2010)
+colnames(race10) <- c("CTYNAME", "WHITE", "BLACK", "INDIAN", "ASIAN", "HAWAIIAN", "OTHERS", "YEAR")
+race10 <- race10[-1,]
+
+race <- rbind(race14, race10)
+write.csv(race, file="race.csv")
+```
+
+```{r}
+sexage17 <- read_csv("/home/jvstats/NEW_DATA/DEMOGRAPHICS_SUPPLEMENTAL/SEX and AGE/ACS_17_1YR_S0101_with_ann.csv")
+#colnames(sexage14) <- as.character(unlist(sexage14[1,]))
+sexage17 <- sexage17 %>%
+  mutate(YEAR = 2017) %>% 
+  select("GEO.display-label", "YEAR", "HC03_EST_VC01", "HC05_EST_VC01", "HC01_EST_VC07", "HC02_EST_VC07", "HC03_EST_VC07", "HC01_EST_VC08",  "HC02_EST_VC08", "HC03_EST_VC08", "HC01_EST_VC28")
+colnames(sexage17) <- c("CTYNAME", "YEAR", "TOTALMALE", "TOTALFEMALE", "AGE2024_TOTAL", "AGE2024_MALE", "AGE2024_FEMALE", "AGE2529_TOTAL", "AGE2529_MALE", "AGE2529_FEMALE", "AGE18ABOVE")
+sexage17 <- sexage17[-1, ]
+
+sexage16 <- read_csv("/home/jvstats/NEW_DATA/DEMOGRAPHICS_SUPPLEMENTAL/SEX and AGE/ACS_16_5YR_S0101_with_ann.csv")
+#colnames(sexage14) <- as.character(unlist(sexage14[1,]))
+sexage16 <- sexage16 %>%
+  mutate(YEAR = 2016) %>% 
+  select("GEO.display-label", "YEAR", "HC02_EST_VC01", "HC03_EST_VC01", "HC02_EST_VC07", "HC04_EST_VC07", "HC03_EST_VC07", "HC01_EST_VC08",  "HC02_EST_VC08", "HC03_EST_VC08", "HC01_EST_VC28")
+colnames(sexage16) <- c("CTYNAME", "YEAR", "TOTALMALE", "TOTALFEMALE", "AGE2024_TOTAL", "AGE2024_MALE", "AGE2024_FEMALE", "AGE2529_TOTAL", "AGE2529_MALE", "AGE2529_FEMALE", "AGE18ABOVE")
+sexage16 <- sexage16[-1, ]
+
+sexage14 <- read_csv("/home/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/SEX and AGE/ACS_14_5YR_S0101_with_ann.csv")
+#colnames(sexage14) <- as.character(unlist(sexage14[1,]))
+sexage14 <- sexage14 %>%
+  mutate(YEAR = 2014) %>% 
+  select("GEO.display-label", "YEAR", "HC02_EST_VC01", "HC03_EST_VC01", "HC01_EST_VC07", "HC02_EST_VC07", "HC03_EST_VC07", "HC01_EST_VC08",  "HC02_EST_VC08", "HC03_EST_VC08", "HC01_EST_VC28")
+colnames(sexage14) <- c("CTYNAME", "YEAR", "TOTALMALE", "TOTALFEMALE", "AGE2024_TOTAL", "AGE2024_MALE", "AGE2024_FEMALE", "AGE2529_TOTAL", "AGE2529_MALE", "AGE2529_FEMALE", "AGE18ABOVE")
+sexage14 <- sexage14[-1, ]
+
+sexage12 <- read_csv("/home/jvstats/NEW_DATA/DEMOGRAPHICS_SUPPLEMENTAL/SEX and AGE/ACS_12_5YR_S0101_with_ann.csv")
+#colnames(sexage14) <- as.character(unlist(sexage14[1,]))
+sexage12 <- sexage12 %>%
+  mutate(YEAR = 2012) %>% 
+  select("GEO.display-label", "YEAR", "HC02_EST_VC01", "HC03_EST_VC01", "HC01_EST_VC07", "HC02_EST_VC07", "HC03_EST_VC07", "HC01_EST_VC08",  "HC02_EST_VC08", "HC03_EST_VC08", "HC01_EST_VC28")
+colnames(sexage12) <- c("CTYNAME", "YEAR", "TOTALMALE", "TOTALFEMALE", "AGE2024_TOTAL", "AGE2024_MALE", "AGE2024_FEMALE", "AGE2529_TOTAL", "AGE2529_MALE", "AGE2529_FEMALE", "AGE18ABOVE")
+sexage12 <- sexage12[-1, ]
+
+sexage10 <- read_csv("/home/jvstats/NEW_DATA/DEMOGRAPHICS_5_YEAR/SEX and AGE/ACS_10_5YR_S0101_with_ann.csv")
+#colnames(sexage14) <- as.character(unlist(sexage14[1,]))
+sexage10 <- sexage10 %>%
+  mutate(YEAR = 2010) %>% 
+  select("GEO.display-label", "YEAR", "HC02_EST_VC01", "HC03_EST_VC01", "HC01_EST_VC07", "HC02_EST_VC07", "HC03_EST_VC07", "HC01_EST_VC08",  "HC02_EST_VC08", "HC03_EST_VC08", "HC01_EST_VC28")
+colnames(sexage10) <- c("CTYNAME", "YEAR", "TOTALMALE", "TOTALFEMALE", "AGE2024_TOTAL", "AGE2024_MALE", "AGE2024_FEMALE", "AGE2529_TOTAL", "AGE2529_MALE", "AGE2529_FEMALE", "AGE18ABOVE")
+sexage10 <- sexage10[-1, ]
+View(sexage10)
+
+sexage08 <- read_csv("/home/jvstats/NEW_DATA/DEMOGRAPHICS_SUPPLEMENTAL/SEX and AGE/ACS_08_1YR_S0101_with_ann.csv")
+dim(sexage08)
+#colnames(sexage14) <- as.character(unlist(sexage14[1,]))
+sexage08 <- sexage08 %>%
+  mutate(YEAR = 2008) %>% 
+  select("GEO.display-label", "YEAR", "HC02_EST_VC01", "HC03_EST_VC01", "HC01_EST_VC07", "HC02_EST_VC07", "HC03_EST_VC07", "HC01_EST_VC08",  "HC02_EST_VC08", "HC03_EST_VC08", "HC01_EST_VC27")
+colnames(sexage08) <- c("CTYNAME", "YEAR", "TOTALMALE", "TOTALFEMALE", "AGE2024_TOTAL", "AGE2024_MALE", "AGE2024_FEMALE", "AGE2529_TOTAL", "AGE2529_MALE", "AGE2529_FEMALE", "AGE18ABOVE")
+sexage08 <- sexage08[-1, ]
+
+sexage06 <- read_csv("/home/jvstats/NEW_DATA/DEMOGRAPHICS_SUPPLEMENTAL/SEX and AGE/ACS_06_EST_S0101_with_ann.csv")
+#colnames(sexage14) <- as.character(unlist(sexage14[1,]))
+sexage06 <- sexage06 %>%
+  mutate(YEAR = 2006) %>% 
+  select("GEO.display-label", "YEAR", "HC02_EST_VC01", "HC03_EST_VC01", "HC01_EST_VC07", "HC02_EST_VC07", "HC03_EST_VC07", "HC01_EST_VC08",  "HC02_EST_VC08", "HC03_EST_VC08", "HC01_EST_VC27")
+colnames(sexage06) <- c("CTYNAME", "YEAR", "TOTALMALE", "TOTALFEMALE", "AGE2024_TOTAL", "AGE2024_MALE", "AGE2024_FEMALE", "AGE2529_TOTAL", "AGE2529_MALE", "AGE2529_FEMALE", "AGE18ABOVE")
+sexage06 <- sexage06[-1, ]
+View(sexage06)
+
+
+sexage <- rbind(sexage06, sexage08, sexage10, sexage12, sexage14, sexage16) 
+View(sexage)
+write.csv(sexage, file="sexage4.csv")
+
+
+
+```

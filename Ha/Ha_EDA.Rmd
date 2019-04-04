@@ -1,0 +1,73 @@
+---
+title: "Ha_EDA"
+author: "Thu Ha Nguyen"
+date: "10/24/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+#Question: 
+- should we divide it by population?
+```{r}
+library(tidyverse)
+library(readr)
+library(ggplot2)
+```
+
+#Check number of voter turnout by county
+Some county lies within different district, even within the same year
+```{r}
+subdata <- read_csv("~/jvstats/Ha/subdata.csv")
+head(subdata)
+nrow(subdata)
+ncol(subdata)
+```
+
+#Distribution of response variable
+```{r}
+hist(subdata$TOTVOTERS)
+hist(log(subdata$TOTVOTERS))
+ggplot(data=subdata, aes(TOTVOTERS)) +
+    geom_histogram()+facet_wrap(~YEAR)
+ggplot(data=subdata, aes(log(TOTVOTERS))) +
+    geom_histogram()+facet_wrap(~YEAR)
+```
+#Trends over year
+```{r}
+p <- ggplot(data=subdata, aes(x=YEAR, y=log(TOTVOTERS), color=as.factor(CTYNAME))) +
+    geom_line() #outlier: hennepin at 2010
+#ggplotly(p)
+ggplot(data=subdata, aes(x=YEAR, y=log(TOTVOTERS), color=as.factor(CTYNAME))) +
+    geom_point() #outlier: hennepin at 2010
+library(plotly)
+p
+```
+
+#demographics
+```{r}
+subdata2.df <- subdata %>%
+  filter(YEAR == c(2010, 2014))
+head(subdata2.df)
+```
+#EDA demographics
+```{r}
+hist(subdata2.df$`EMPLOYMENT ESTIMATE`)
+ggplot(data=subdata2.df, aes(x=`EMPLOYMENT ESTIMATE`, y=log(TOTVOTERS), color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR)
+ggplot(data=subdata2.df, aes(x=log(`EMPLOYMENT ESTIMATE`), y=log(TOTVOTERS), color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR)
+```
+```{r}
+hist(subdata2.df$POPULATION)
+hist(log(subdata2.df$POPULATION))
+ggplot(data=subdata2.df, aes(x=POPULATION, y=log(TOTVOTERS), color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR)
+ggplot(data=subdata2.df, aes(x=log(POPULATION), y=log(TOTVOTERS), color=as.factor(CTYNAME))) +
+    geom_point() + facet_wrap(~YEAR)
+summary(lm(log(TOTVOTERS)~log(POPULATION), data=subdata2.df))
+```

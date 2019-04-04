@@ -1,0 +1,97 @@
+---
+title: "Mykhe_EDA"
+author: "My Khe"
+date: "10/22/2018"
+output: html_document
+---
+
+```{r}
+library(readr)
+library(ggplot2)
+```
+
+
+```{r}
+final <- read_csv("~/jvstats/finaldataset.csv")
+View(final)
+final <- final[, -c(8:138)]
+colnames(final)
+final1 <- final[,c(5, 9:23)]
+```
+
+```{r}
+# Look at Cook Political Report's Competitiveness Index
+final$COOK.HouseRep <- as.factor(as.character(final$COOK.HouseRep))
+final$COOK.Governer <- as.factor(as.character(final$COOK.Governer))
+final$COOK.Senate1 <- as.factor(as.character(final$COOK.Senate1))
+final$COOK.Senate2 <- as.factor(as.character(final$COOK.Senate2))
+
+ggplot(final, aes(x=as.factor(COOK.HouseRep), y=TOTVOTERS)) + 
+  geom_boxplot()
+table(final$COOK.HouseRep)
+ggplot(final, aes(x=COOK.Senate1, y=TOTVOTERS)) + 
+  geom_boxplot()
+summary(lm(TOTVOTERS2~COOK.HouseRep + SOCIALCAP.sk2014, data=final))
+cor(final[ ,c("COOK.HouseRep", "TOTVOTERS2")], use="complete.obs")
+```
+
+```{r}
+# Look at partisan control
+final$STATELEGIS.House[10000:10050]
+head(final$`HOUSE.Congress (Years)`)
+head(final$`HOUSE.# of House Seats`)
+head(final$`HOUSE.Del./Res.`)
+head(final$HOUSE.Democrats)
+final$TOTVOTERS2 <- final$TOTVOTERS
+final$TOTVOTERS <- log(final$TOTVOTERS)
+ggplot(final, aes(x=STATELEGIS.House, y=TOTVOTERS, color=as.factor(YEAR))) + 
+  geom_boxplot()
+ggplot(final, aes(x=STATELEGIS.Governor, y=TOTVOTERS, color=as.factor(YEAR))) + 
+  geom_boxplot()
+ggplot(final, aes(x=STATELEGIS.Senate, y=TOTVOTERS, color=STATELEGIS.House)) + 
+  geom_boxplot()
+ggplot(final, aes(x=as.factor(final$CONTROL.House), y=TOTVOTERS, color=as.factor(YEAR))) + 
+  geom_boxplot()
+ggplot(final, aes(x=as.factor(final$CONTROL.Senate), y=TOTVOTERS, color=as.factor(CONTROL.House))) + 
+  geom_boxplot()
+ggplot(final, aes(x=as.factor(final$CONTROL.Senate), y=TOTVOTERS, color=as.factor(CONTROL.House))) + 
+  geom_boxplot()
+final$CONTROL.Senate <- ifelse(final$SENATE.Democrat - final$SENATE.Republican > 0, 1, 0)
+table(final$HOUSE.Democrats)
+table(final$HOUSE.Republicans)
+```
+
+```{r}
+# Look at social capital
+final$SOCIALCAP.Religious2014
+final2 <- final[final$YEAR== 2014 | final$YEAR == 2010, ]
+final$SOCIA
+ggplot(final2, aes(x=SOCIALCAP.Political2014, y=TOTVOTERS)) + 
+  geom_point() + facet_wrap(~YEAR)
+ggplot(final2, aes(x=log(SOCIALCAP.Civic2014), y=TOTVOTERS)) + 
+  geom_point() + facet_wrap(~YEAR)
+ggplot(final2, aes(x=log(SOCIALCAP.Business2014), y=TOTVOTERS)) + 
+  geom_point() + facet_wrap(~YEAR)
+ggplot(final2, aes(x=log(SOCIALCAP.Religious2014), y=TOTVOTERS)) + 
+  geom_point() + facet_wrap(~YEAR)
+ggplot(final2, aes(x=SOCIALCAP.sk2014, y=TOTVOTERS, color='EMPLOYMENT ESTIMATE')) +
+  geom_point() + facet_wrap(~YEAR)
+ggplot(final2, aes(x=SOCIALCAP.assn2014, y=TOTVOTERS)) +
+  geom_point() + facet_wrap(~YEAR) + geom_smooth(method = "lm") + 
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    panel.background = element_blank())
+
+colnames(final2)[43] <- "Employment"
+cor(final1, use = "complete.obs") 
+summary(lm(TOTVOTERS2 ~ SOCIALCAP.assn2014, data=final))
+max(final$SOCIALCAP.sk2014)
+colnames(final)
+final[order(final$SOCIALCAP.sk2014), c("CTYNAME", "TOTVOTERS2", "INCOME/BENEFITS" )]
+head(sort(final$SOCIALCAP.sk2014, decreasing=TRUE), 1000)
+murray county, kittson county, lake of the woods, grant, marshall
+```
+

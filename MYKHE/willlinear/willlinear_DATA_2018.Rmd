@@ -1,0 +1,329 @@
+---
+title: "MYKHE_Data_2018"
+author: "My Khe"
+date: "10/31/2018"
+output: html_document
+---
+
+---
+title: "Ha_DemographicTrend"
+author: "Thu Ha Nguyen"
+date: "10/30/2018"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(readr)
+library(ggplot2)
+```
+
+
+```{r}
+final_county <- read_csv("~/jvstats/final_county.csv")
+#summary(final_county)
+```
+#voting age eligible population
+
+```{r}
+ggplot(data=final_county, aes(x=YEAR, y=VOTE_ELIGIBLE, color=as.factor(CTYNAME))) +
+    geom_line()
+
+#https://metrocouncil.org/News-Events/Communities/News-Articles/Population-growth-in-the-7-county-metro-remains-st.aspx
+
+final_county[which.max(final_county$VOTE_ELIGIBLE),]
+CTYNAME.vector <- as.data.frame(final_county[final_county$YEAR==2016, "CTYNAME"])
+VOTE_ELIGIBLE.vector <- NULL
+for (i in 1:nrow(CTYNAME.vector)) {
+  subdata <- final_county[final_county$CTYNAME == CTYNAME.vector[[i,1]], ]
+  model <- summary(lm(VOTE_ELIGIBLE ~ YEAR, data=subdata))
+  VOTE_ELIGIBLE.vector[i] <- model$coefficients[1] + model$coefficients[2] * 2018
+}
+
+VOTE_ELIGIBLE.vector
+
+data_2018 <- cbind(CTYNAME.vector, VOTE_ELIGIBLE.vector)
+data_2018
+```
+
+```{r}
+ggplot(data=final_county, aes(x=YEAR, y=`Citizen: US Born`, color=as.factor(CTYNAME))) +
+    geom_line() 
+CITIZEN.USBORN.vector <- NULL
+for (i in 1:nrow(CTYNAME.vector)) {
+  subdata <- final_county[final_county$CTYNAME == CTYNAME.vector[[i,1]], ]
+  model <- summary(lm(`Citizen: US Born` ~ YEAR, data=subdata))
+  CITIZEN.USBORN.vector[i] <- model$coefficients[1] + model$coefficients[2] * 2018
+}
+
+CITIZEN.USBORN.vector
+
+data_2018 <- cbind(data_2018, CITIZEN.USBORN.vector)
+
+ggplot(data=final_county, aes(x=YEAR, y=`Citizen: Born Abroad`, color=as.factor(CTYNAME))) +
+    geom_line() 
+CITIZEN.BORNABROAD.vector <- NULL
+for (i in 1:nrow(CTYNAME.vector)) {
+  subdata <- final_county[final_county$CTYNAME == CTYNAME.vector[[i,1]], ]
+  model <- summary(lm(`Citizen: Born Abroad` ~ YEAR, data=subdata))
+  CITIZEN.BORNABROAD.vector[i] <- model$coefficients[1] + model$coefficients[2] * 2018
+}
+
+CITIZEN.BORNABROAD.vector
+
+data_2018 <- cbind(data_2018, CITIZEN.BORNABROAD.vector)
+data_2018
+
+```
+
+```{r}
+# Agriculture
+final_county$OCC.HC01_EST_VC02 <- as.numeric(final_county$OCC.HC01_EST_VC02)
+ggplot(data=final_county, aes(x=YEAR, y=OCC.HC01_EST_VC02, color=as.factor(CTYNAME))) +
+    geom_line() 
+ggplot(data=final_county[final_county$CTYNAME == "ramsey",], aes(x=YEAR, y=OCC.HC01_EST_VC02, color=as.factor(CTYNAME))) +
+    geom_line() 
+
+ggplot(data=final_county[final_county$CTYNAME == "redwood",], aes(x=YEAR, y=OCC.HC01_EST_VC02, color=as.factor(CTYNAME))) +
+    geom_line() 
+
+ggplot(data=final_county[final_county$CTYNAME == "red lake",], aes(x=YEAR, y=OCC.HC01_EST_VC02, color=as.factor(CTYNAME))) +
+    geom_line() 
+
+CITIZEN.USBORN.vector <- NULL
+for (i in 1:nrow(CTYNAME.vector)) {
+  subdata <- final_county[final_county$CTYNAME == CTYNAME.vector[[i,1]], ]
+  model <- summary(lm(`Citizen: US Born` ~ YEAR, data=subdata))
+  CITIZEN.USBORN.vector[i] <- model$coefficients[1] + model$coefficients[2] * 2018
+}
+
+CITIZEN.USBORN.vector
+
+data_2018 <- cbind(data_2018, CITIZEN.USBORN.vector)
+
+ggplot(data=final_county, aes(x=YEAR, y=`Citizen: Born Abroad`, color=as.factor(CTYNAME))) +
+    geom_line() 
+CITIZEN.BORNABROAD.vector <- NULL
+for (i in 1:nrow(CTYNAME.vector)) {
+  subdata <- final_county[final_county$CTYNAME == CTYNAME.vector[[i,1]], ]
+  model <- summary(lm(`Citizen: Born Abroad` ~ YEAR, data=subdata))
+  CITIZEN.BORNABROAD.vector[i] <- model$coefficients[1] + model$coefficients[2] * 2018
+}
+
+CITIZEN.BORNABROAD.vector
+
+data_2018 <- cbind(data_2018, CITIZEN.BORNABROAD.vector)
+data_2018
+```
+#employment and income
+```{r}
+ggplot(data=final_county, aes(x=YEAR, y=EMPLOY.HC04_EST_VC01, color=as.factor(CTYNAME))) +
+    geom_line() + ylab("Unemployed; Estimate; Population 16 years and over")
+
+ggplot(data=final_county, aes(x=YEAR, y=INCOME.HC01_EST_VC13, color=as.factor(CTYNAME))) +
+    geom_line() + ylab("Households; Estimate; Median income (dollars)")
+
+ggplot(data=final_county, aes(x=YEAR, y=INCOME.HC01_EST_VC02, color=as.factor(CTYNAME))) +
+    geom_line() + ylab("Households; Estimate; Less than $10,000")
+summary(lm(INCOME.HC01_EST_VC13~YEAR, data=final_county))
+```
+
+#education
+```{r}
+#%HS Degree
+Education_hs.vector <- NULL
+for (i in 1:nrow(CTYNAME.vector)) {
+  subdata <- final_county[final_county$CTYNAME == CTYNAME.vector[[i,1]], ]
+  model <- summary(lm(`HIGHSCHOOL DEGREE` ~ YEAR, data=subdata))
+  Education_hs.vector[i] <- model$coefficients[1] + model$coefficients[2] * 2018
+}
+
+Education_hs.vector
+
+data_2018 <- cbind(data_2018, Education_hs.vector)
+
+ggplot(data=final_county, aes(x=YEAR, y=`HIGHSCHOOL DEGREE`, color=as.factor(CTYNAME))) +
+    geom_line() 
+
+```
+
+```{r}
+#%bachelor's
+Education_ba.vector <- NULL
+for (i in 1:nrow(CTYNAME.vector)) {
+  subdata <- final_county[final_county$CTYNAME == CTYNAME.vector[[i,1]], ]
+  model <- summary(lm(`BACHELOR'S DEGREE` ~ YEAR, data=subdata))
+  Education_ba.vector[i] <- model$coefficients[1] + model$coefficients[2] * 2018
+}
+
+Education_ba.vector
+
+data_2018 <- cbind(data_2018, Education_ba.vector)
+
+ggplot(data=final_county, aes(x=YEAR, y=`BACHELOR'S DEGREE`, color=as.factor(CTYNAME))) +
+    geom_line() 
+
+#note cook county is an outlier
+ba_outlier<-education.df%>%
+filter(CTYNAME=="Cook County, Minnesota")
+
+  ggplot(data=ba_outlier, aes(x=YEAR, y=`BACHELOR'S DEGREE`)) +
+    geom_line()+
+    geom_smooth(method=lm)
+```
+
+
+# Income (Median Household Income, Percent of Households that have annual income less than $10,000), 
+```{r}
+#Median Income
+#INCOME.HC01_EST_VC13
+Median_income.vector <- NULL
+for (i in 1:nrow(CTYNAME.vector)) {
+  subdata <- final_county[final_county$CTYNAME == CTYNAME.vector[[i,1]], ]
+  model <- summary(lm(`INCOME.HC01_EST_VC13` ~ YEAR, data=subdata))
+  Median_income.vector[i] <- model$coefficients[1] + model$coefficients[2] * 2018
+}
+
+Median_income.vector
+
+data_2018 <- cbind(data_2018, Median_income.vector)
+
+ggplot(data=final_county, aes(x=YEAR, y=`INCOME.HC01_EST_VC13`, color=as.factor(CTYNAME))) +
+    geom_line()+
+  labs(title="Regression of Median Income by year",y="median income", colour = "County")
+```
+
+```{r}
+#Househols<10,000
+#INCOME.HC01_EST_VC02
+low_income.vector <- NULL
+for (i in 1:nrow(CTYNAME.vector)) {
+  subdata <- final_county[final_county$CTYNAME == CTYNAME.vector[[i,1]], ]
+  model <- summary(lm(`INCOME.HC01_EST_VC02` ~ YEAR, data=subdata))
+  low_income.vector[i] <- model$coefficients[1] + model$coefficients[2] * 2018
+}
+
+low_income.vector
+
+data_2018 <- cbind(data_2018, low_income.vector)
+
+ggplot(data=final_county, aes(x=YEAR, y=`INCOME.HC01_EST_VC02`, color=as.factor(CTYNAME))) +
+    geom_line()+
+  labs(title="Regression of Low Income Households by year",y="%Low Income", colour = "County")
+
+```
+
+#Age(Percent of the population 20-24 years old, percent of the population 25-29 years old)
+```{r}
+#20-24
+#AGE2024
+age20_24.vector <- NULL
+for (i in 1:nrow(CTYNAME.vector)) {
+  subdata <- final_county[final_county$CTYNAME == CTYNAME.vector[[i,1]], ]
+  model <- summary(lm(`AGE2024` ~ YEAR, data=subdata))
+  age20_24.vector[i] <- model$coefficients[1] + model$coefficients[2] * 2018
+}
+
+age20_24.vector
+
+data_2018 <- cbind(data_2018, age20_24.vector)
+
+ggplot(data=final_county, aes(x=YEAR, y=`AGE2024`, color=as.factor(CTYNAME))) +
+    geom_line()+
+  labs(title="Regression Age 20-24",y="%20-24", colour = "County")
+
+#note: residuals may be producing problematic data
+
+```
+
+```{r}
+#20-24
+#AGE2529
+age25_29.vector <- NULL
+for (i in 1:nrow(CTYNAME.vector)) {
+  subdata <- final_county[final_county$CTYNAME == CTYNAME.vector[[i,1]], ]
+  model <- summary(lm(`AGE2529` ~ YEAR, data=subdata))
+  age25_29.vector[i] <- model$coefficients[1] + model$coefficients[2] * 2018
+}
+
+age25_29.vector
+
+data_2018 <- cbind(data_2018, age20_24.vector)
+
+ggplot(data=final_county, aes(x=YEAR, y=`AGE2529`, color=as.factor(CTYNAME))) +
+    geom_line()+
+  labs(title="Regression Age 25-29",y="%25-29", colour = "County")
+
+```
+
+#Race(Percent of the population of white, Percent of the population of black)
+```{r}
+#percent white
+#define variable for final data
+final_county<- final_county%>%
+  group_by(CTYNAME)%>%
+  mutate(percent_white=WHITE/POPULATION)
+
+
+percentwhite.vector <- NULL
+for (i in 1:nrow(CTYNAME.vector)) {
+  subdata <- final_county[final_county$CTYNAME == CTYNAME.vector[[i,1]], ]
+  model <- summary(lm(percent_white ~ YEAR, data=subdata))
+  percentwhite.vector[i] <- model$coefficients[1] + model$coefficients[2] * 2018
+}
+
+percentwhite.vector
+
+data_2018 <- cbind(data_2018, age20_24.vector)
+
+ggplot(data=final_county, aes(x=YEAR, y=`percent_white`, color=as.factor(CTYNAME))) +
+    geom_line()+
+  labs(title="Regression of white population",y="% white", colour = "County")
+
+```
+```{r}
+#percent black
+#define variable for final data
+final_county<- final_county%>%
+  group_by(CTYNAME)%>%
+  mutate(percent_black=BLACK/POPULATION)
+
+
+percentblack.vector <- NULL
+for (i in 1:nrow(CTYNAME.vector)) {
+  subdata <- final_county[final_county$CTYNAME == CTYNAME.vector[[i,1]], ]
+  model <- summary(lm(percent_black ~ YEAR, data=subdata))
+  percentblack.vector[i] <- model$coefficients[1] + model$coefficients[2] * 2018
+}
+
+percentblack.vector
+
+data_2018 <- cbind(data_2018, percentblack.vector)
+
+ggplot(data=final_county, aes(x=YEAR, y=`percent_black`, color=as.factor(CTYNAME))) +
+    geom_line()+
+  labs(title="Regression of black population",y="% black", colour = "County")
+
+```
+
+```{r}
+#percent unemployed
+
+unemployment_rate.vector <- NULL
+for (i in 1:nrow(CTYNAME.vector)) {
+  subdata <- final_county[final_county$CTYNAME == CTYNAME.vector[[i,1]], ]
+  model <- summary(lm(`EMPLOY.HC04_EST_VC01` ~ YEAR, data=subdata))
+  unemployment_rate.vector[i] <- model$coefficients[1] + model$coefficients[2] * 2018
+}
+
+unemployment_rate.vector
+
+data_2018 <- cbind(data_2018, unemployment_rate.vector)
+
+ggplot(data=final_county, aes(x=YEAR, y=`EMPLOY.HC04_EST_VC01`, color=as.factor(CTYNAME))) +
+    geom_line()+
+  labs(title="Regression of unemplyment rate",y="%unemployed", colour = "County")
+
+
+```
+

@@ -1,0 +1,49 @@
+---
+title: "Ha_EDA"
+author: "Thu Ha Nguyen"
+date: "10/20/2018"
+output: html_document
+---
+```{r}
+library(tidyverse)
+library(readr)
+library(ggplot2)
+```
+
+#Check number of voter turnout by county
+Some county lies within different district, even within the same year
+```{r}
+sample.df <- read_csv("~/jvstats/finaldataset.csv")
+head(sample.df)
+response.df <- sample.df %>%
+  group_by(`CTYNAME`,`YEAR`, `CTYCODE`) %>%
+  summarise(
+    TOTVOTING = sum(TOTVOTERS)
+  )
+nrow(response.df)
+head(response.df)
+```
+
+#Check the number of precinct every year
+```{r}
+sample.df %>%
+  count(PCTNAME)
+```
+#Distribution of response variable
+```{r}
+hist(response.df$TOTVOTING)
+hist(log(response.df$TOTVOTING))
+ggplot(data=response.df, aes(TOTVOTING)) +
+    geom_histogram()+facet_wrap(~YEAR)
+ggplot(data=response.df, aes(log(TOTVOTING))) +
+    geom_histogram()+facet_wrap(~YEAR)
+```
+#Trends over year
+```{r}
+ggplot(data=response.df, aes(x=YEAR, y=log(TOTVOTING), color=as.factor(CTYNAME))) +
+    geom_line() #outlier: hennepin at 2010
+ggplot(data=response.df, aes(x=YEAR, y=log(TOTVOTING), color=as.factor(CTYNAME))) +
+    geom_point() #outlier: hennepin at 2010
+
+
+```

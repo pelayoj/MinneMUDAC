@@ -1,0 +1,213 @@
+---
+title: "MYKHE_EDA_102818"
+author: "My Khe"
+date: "10/28/2018"
+output: html_document
+---
+
+```{r}
+library(readr)
+final <- read_csv("/home/jvstats/final_county.csv")
+View(final)
+final$PresYear <- ifelse(final$YEAR=="2016"|final$YEAR == "2012"|final$YEAR=="2008"|final$YEAR=="2004", 1, 0)
+```
+
+```{r}
+final <- read_csv("~/jvstats/MYKHE/EDA/withContribution2.csv")
+final <- final[final$PresYear==0, ]
+View(final)
+```
+
+```{r}
+final$SOCIALCAP.assn <- ifelse(final$YEAR=="2016"|final$YEAR == "2014"|final$YEAR=="2012"|final$YEAR=="2010", final$SOCIALCAP.assn2014, final$SOCIALCAP.assn09)
+
+final$SOCIALCAP.Religious <- ifelse(final$YEAR=="2016"|final$YEAR == "2014"|final$YEAR=="2012"|final$YEAR=="2010", final$SOCIALCAP.Religious2014, final$SOCIALCAP.relig09)
+
+final$SOCIALCAP.Civic <- ifelse(final$YEAR=="2016"|final$YEAR == "2014"|final$YEAR=="2012"|final$YEAR=="2010", final$SOCIALCAP.Civic2014, final$SOCIALCAP.civic09)
+
+final$SOCIALCAP.Business <- final$SOCIALCAP.Business2014
+
+final$SOCIALCAP.Political <- ifelse(final$YEAR=="2016"|final$YEAR == "2014"|final$YEAR=="2012"|final$YEAR=="2010", final$SOCIALCAP.Political2014, final$SOCIALCAP.pol09)
+
+final$SOCIALCAP.Professional <- ifelse(final$YEAR=="2016"|final$YEAR == "2014"|final$YEAR=="2012"|final$YEAR=="2010", final$SOCIALCAP.Professional2014, final$SOCIALCAP.prof09)
+
+final$SOCIALCAP.Labor <- ifelse(final$YEAR=="2016"|final$YEAR == "2014"|final$YEAR=="2012"|final$YEAR=="2010", final$SOCIALCAP.Labor2014, final$SOCIALCAP.labor09)
+
+final$SOCIALCAP.Bowling <- ifelse(final$YEAR=="2016"|final$YEAR == "2014"|final$YEAR=="2012"|final$YEAR=="2010", final$SOCIALCAP.Bowling2014, final$SOCIALCAP.bowl09)
+
+final$SOCIALCAP.Golf <- ifelse(final$YEAR=="2016"|final$YEAR == "2014"|final$YEAR=="2012"|final$YEAR=="2010", final$SOCIALCAP.Golf2014, final$SOCIALCAP.golf09)
+
+final$SOCIALCAP.nccs <- ifelse(final$YEAR=="2016"|final$YEAR == "2014"|final$YEAR=="2012"|final$YEAR=="2010", final$SOCIALCAP.nccs2014, final$SOCIALCAP.nccs09)
+
+final$SOCIALCAP.Recreational <- final$SOCIALCAP.Recreational2014
+
+final$SOCIALCAP.sk <- ifelse(final$YEAR=="2016"|final$YEAR == "2014"|final$YEAR=="2012"|final$YEAR=="2010", final$SOCIALCAP.sk2014, final$SOCIALCAP.sk09)
+```
+
+
+Comment: Separate variables are positively correlated with voter turnout but the combined index has the opposite relationship - there is something dubious with the way all of these factors play together. Maybe urban/rural settings, economic factors, etc. 
+
+```{r}
+ggplot(final, aes(x= SOCIALCAP.assn, y= VOTEPERCENT, group=STATELEGIS.Governor, color=STATELEGIS.Governor )) + 
+  geom_point() + geom_smooth(method=lm)
+ggplot(final, aes(x= SOCIALCAP.assn, y= VOTEPERCENT, group=as.factor(HOUSE.Control), color=as.factor(HOUSE.Control))) + 
+  geom_point() + geom_smooth(method=lm)
+ggplot(final, aes(x= SOCIALCAP.assn, y= VOTEPERCENT, size=BLACK/POPULATION, color=BLACK/POPULATION)) + 
+  geom_point() + geom_smooth(method=lm)
+ggplot(final, aes(x= MONEY.Governor, y= VOTEPERCENT, group=as.factor(MONEY.House), color=as.factor(MONEY.House))) + 
+  geom_boxplot() + geom_smooth(method=lm)
+ggplot(final, aes(x= log(`INCOME.HC01_EST_VC01`), y= VOTEPERCENT, group=as.factor(MONEY.House), color=as.factor(MONEY.House))) + 
+  geom_point() + geom_smooth(method=lm)
+
+favstats(final$INCOME.HC01_EST_VC13)
+
+final$HighIncome <- ifelse(final$INCOME.HC01_EST_VC13 > 49456, 1, 0)
+
+ggplot(final, aes(x= SOCIALCAP.assn, y= VOTEPERCENT, size=log(`INCOME.HC01_EST_VC01`), color=log(`INCOME.HC01_EST_VC01`))) + 
+  geom_point() + geom_smooth(method=lm)
+ggplot(final, aes(x= SOCIALCAP.assn, y= VOTEPERCENT, group=as.factor(HighIncome), color=as.factor(HighIncome))) + 
+  geom_point() + geom_smooth(method=lm) + facet_wrap(~YEAR)
+
+ggplot(final, aes(x= SOCIALCAP.assn, y= VOTEPERCENT, color=SOCIALCAP.Religious/POPULATION, size=SOCIALCAP.Religious/POPULATION)) + 
+  geom_point() + geom_smooth(method=lm)
+final$SOCIALCAP.Religious2 <- final$SOCIALCAP.Religious/final$POPULATION
+
+ggplot(final, aes(x= SOCIALCAP.assn, y= VOTEPERCENT)) + 
+  geom_point() + facet_wrap(~as.factor(YEAR))+ geom_smooth(method=lm)
+summary(lm(VOTEPERCENT~MONEY.Governor+ MONEY.House + MONEY.Senate , data=final))
+summary(lm(VOTEPERCENT~SOCIALCAP.assn *BLACK/POPULATION, data=final))
+summary(lm(VOTEPERCENT~SOCIALCAP.assn * log(`INCOME.HC01_EST_VC01`) , data=final))
+summary(lm(VOTEPERCENT~SOCIALCAP.assn * HighIncome , data=final))
+
+
+final1 <- final[!(is.na(final$MONEY.House)) | !(is.na(final$MONEY.Governor)),]
+summary(lm(VOTEPERCENT~SENATE.Control * BLACK/POPULATION, data=final1))
+summary(lm(VOTEPERCENT~MONEY.House * MONEY.Senate , data=final))
+summary(lm(VOTEPERCENT~MONEY.House * MONEY.Governor , data=final))
+summary(lm(VOTEPERCENT~MONEY.House * MONEY.Governor , data=final))
+
+ggplot(final, aes(x= SOCIALCAP.assn, y= VOTEPERCENT, color=(WHITE/POPULATION))) + 
+  geom_point() + geom_smooth(method=lm)
+
+summary(final)
+
+```
+
+```{r}
+#final$HOUSE.Control <- ifelse(final$HOUSE.Democrats - final$HOUSE.Republicans > 0, 0,1)
+#final$SENATE.Control <- ifelse(final$SENATE.Democrat - final$SENATE.Republican > 0, 0,1)
+ggplot(final, aes(x= STATELEGIS.House, y=VOTEPERCENT, color=as.factor(PresYear))) + 
+  geom_boxplot()
+ggplot(final, aes(x= STATELEGIS.House, y=VOTEPERCENT, color=as.factor(YEAR))) + 
+  geom_boxplot()
+ggplot(final, aes(x= STATELEGIS.Senate, y=VOTEPERCENT, color=as.factor(PresYear))) + 
+  geom_boxplot()
+ggplot(final, aes(x= STATELEGIS.Senate, y=VOTEPERCENT, color=as.factor(YEAR))) + 
+  geom_boxplot()
+ggplot(final, aes(x= STATELEGIS.Governor, y=VOTEPERCENT, color=as.factor(PresYear))) + geom_boxplot()
+ggplot(final, aes(x= STATELEGIS.Governor, y=VOTEPERCENT, color=as.factor(YEAR))) + geom_boxplot()
+ggplot(final, aes(x= as.factor(HOUSE.Control), y=VOTEPERCENT, color=as.factor(PresYear))) + 
+  geom_boxplot()
+ggplot(final, aes(x= as.factor(HOUSE.Control), y=VOTEPERCENT, color=as.factor(YEAR))) + 
+  geom_boxplot()
+ggplot(final, aes(x= as.factor(SENATE.Control), y=VOTEPERCENT, color=as.factor(PresYear))) + 
+  geom_boxplot()
+ggplot(final, aes(x= as.factor(SENATE.Control), y=VOTEPERCENT, color=as.factor(YEAR))) + 
+  geom_boxplot()
+```
+
+```{r}
+library(dplyr)
+# Campaign Contribution
+MONEY.House <- read_csv("/home/jvstats/NEW_DATA/CAMPAIGN_CONTRIBUTION/FollowTheMoneyDownload20181028(111021).csv")
+View(MONEY.House)
+colnames(MONEY.House)[c(6,12)] <- c("YEAR", "MONEY.House")
+MONEY.House <- MONEY.House[,c("YEAR", "MONEY.House")]
+final <- left_join(final, MONEY.House)
+
+MONEY.StateOffice <- read_csv("/home/jvstats/NEW_DATA/CAMPAIGN_CONTRIBUTION/FollowTheMoneyDownload20181028(111027).csv")
+View(MONEY.StateOffice)
+MONEY.Governor <- MONEY.StateOffice[MONEY.StateOffice$General_Office == "Gubernatorial", ]
+colnames(MONEY.Governor)[c(7,12)] <- c("YEAR", "MONEY.Governor")
+View(MONEY.Governor)
+MONEY.Governor <- MONEY.Governor[,c("YEAR", "MONEY.Governor")]
+final <- left_join(final, MONEY.Governor)
+MONEY.StateOther <- MONEY.StateOffice[MONEY.StateOffice$General_Office == "Other Statewide", ]
+colnames(MONEY.StateOther)[c(7,12)] <- c("YEAR", "MONEY.StateOther")
+View(MONEY.StateOther)
+MONEY.StateOther <- MONEY.StateOther[,c("YEAR", "MONEY.StateOther")]
+final <- left_join(final, MONEY.StateOther)
+table(final$MONEY.StateOther)
+
+MONEY.StateLegislative <- read_csv("/home/jvstats/NEW_DATA/CAMPAIGN_CONTRIBUTION/FollowTheMoneyDownload20181028(111028).csv")
+View(MONEY.StateLegislative)
+MONEY.StateSenate <- MONEY.StateLegislative[MONEY.StateLegislative$General_Office == "State Senate", ]
+colnames(MONEY.StateSenate)[c(7,12)] <- c("YEAR", "MONEY.StateSenate")
+View(MONEY.StateSenate)
+MONEY.StateSenate <- MONEY.StateSenate[,c("YEAR", "MONEY.StateSenate")]
+final <- left_join(final, MONEY.StateSenate)
+MONEY.StateHouse <- MONEY.StateLegislative[MONEY.StateLegislative$General_Office == "State House/Assembly", ]
+colnames(MONEY.StateHouse)[c(7,12)] <- c("YEAR", "MONEY.StateHouse")
+View(MONEY.StateHouse)
+MONEY.StateHouse <- MONEY.StateHouse[,c("YEAR", "MONEY.StateHouse")]
+final <- left_join(final, MONEY.StateHouse)
+table(final$MONEY.StateHouse)
+write.csv(final, file="withContribution.csv")
+```
+
+```{r}
+final <- read_csv("/home/jvstats/MYKHE/EDA/withContribution.csv")
+View(final)
+```
+
+```{r}
+#MONEY.Senate <- read_csv("/home/jvstats/NEW_DATA/CAMPAIGN_CONTRIBUTION/FollowTheMoneyDownload20181028(111047).csv")
+#View(MONEY.Senate)
+#colnames(MONEY.Senate)[c(7,12)] <- c("YEAR", "MONEY.Senate")
+#MONEY.Senate <- MONEY.Senate[,c("YEAR", "MONEY.Senate")]
+#final <- left_join(final, MONEY.Senate)
+
+#MONEY.President <- read_csv("/home/jvstats/NEW_DATA/CAMPAIGN_CONTRIBUTION/FollowTheMoneyDownload20181028(111048).csv")
+#View(MONEY.President)
+#colnames(MONEY.President)[c(7,12)] <- c("YEAR", "MONEY.President")
+#MONEY.President <- MONEY.President[,c("YEAR", "MONEY.President")]
+#final <- left_join(final, MONEY.President)
+#write.csv(final, file="withContribution2.csv")
+```
+
+```{r}
+final <- read_csv("/home/jvstats/MYKHE/EDA/withContribution2.csv")
+View(final)
+```
+
+```{r}
+ggplot(final, aes(x= as.factor(MONEY.Governor), y= VOTEPERCENT, color=as.factor(YEAR))) + 
+  geom_boxplot()+ facet_wrap(~PresYear)
+
+ggplot(final, aes(x= as.factor(MONEY.House), y= VOTEPERCENT, color=as.factor(YEAR))) + 
+  geom_boxplot()+ facet_wrap(~PresYear)
+
+ggplot(final, aes(x= as.factor(MONEY.Senate), y= VOTEPERCENT, color=as.factor(YEAR))) + 
+  geom_boxplot()+ facet_wrap(~PresYear)
+
+ggplot(final, aes(x= as.factor(MONEY.President), y= VOTEPERCENT, color=as.factor(YEAR))) + 
+  geom_boxplot()+ facet_wrap(~PresYear)
+
+ggplot(final, aes(x= as.factor(MONEY.StateHouse), y= VOTEPERCENT, color=as.factor(YEAR))) + 
+  geom_boxplot()+ facet_wrap(~PresYear)
+
+ggplot(final, aes(x= as.factor(MONEY.StateSenate), y= VOTEPERCENT, color=as.factor(YEAR))) + 
+  geom_boxplot()+ facet_wrap(~PresYear)
+```
+
+```{r}
+final_county$female <- final_county$TOTALFEMALE : final_county$POPULATION
+final_county
+ggplot(final_county[final_county$MIDTERM==1,], aes(x= TOTALFEMALE/POPULATION, y= VOTEPERCENT, color=as.factor(YEAR))) + 
+  geom_point()+ facet_wrap(~YEAR) + geom_smooth(method="lm")
+ggplot(final_county[final_county$MIDTERM==1,], aes(x= TOTALMALE/POPULATION, y= VOTEPERCENT, color=as.factor(YEAR))) + 
+  geom_point()+ facet_wrap(~YEAR) + geom_smooth(method="lm")
+summary(lm(VOTEPERCENT~TOTALMALE/POPULATION, data=final_county[final_county$MIDTERM==1,]))
+```
+
+

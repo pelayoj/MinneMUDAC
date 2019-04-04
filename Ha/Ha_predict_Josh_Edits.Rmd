@@ -1,0 +1,105 @@
+---
+title: "Ha_predict"
+author: "Thu Ha Nguyen"
+date: "11/1/2018"
+output: html_document
+---
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(lme4)
+
+final_county <- read_csv("~/jvstats/final_county.csv")
+```
+
+#Congressional district stuff
+```{r}
+turnout_pct <- read_csv("~/jvstats/NEW_DATA/EXPORTED_DATA/turnout_pct.csv")
+turnout_pct2016 <- turnout_pct %>%
+  filter(YEAR == 2016)
+turnout_pct2016[1, 5] = 1000
+head(turnout_pct2016) 
+for (i in unique(turnout_pct2016$CTYNAME)) {
+  subdata = subset(turnout_pct2016, CTYNAME == i)
+  num_dist = length(unique(subdata$CONGDIST))
+  if (num_dist > 1) {
+    print(i)
+    print(num_dist)
+  }
+  
+}
+```
+
+```{r}
+turnout_pct <- read_csv("~/jvstats/NEW_DATA/EXPORTED_DATA/turnout_pct.csv")
+
+turnout <- turnout_pct %>%
+  filter(CTYNAME != "anoka", CTYNAME != "beltrami",CTYNAME != "carver",CTYNAME != "cottonwood",CTYNAME != "hennepin",CTYNAME != "ramsey",CTYNAME != "rice",CTYNAME != "stearns",CTYNAME != "washington", YEAR ==2016)
+
+turnout <- turnout %>%
+  group_by(CTYNAME)  %>%
+  summarize(TOTVOTERS = sum(TOTVOTERS))
+
+
+district1 <- c("blue earth", "brown", "dodge", "faribault", "fillmore", "freeborn", "houston", "jackson", "le sueur", "martin" ,"mower", "nicollet", "nobles", "olmsted", "rock" ,"steele", "waseca", "watonwan", "winona")
+
+dist1 <- data.frame(district1, 1)
+
+colnames(dist1) <- c("CTYNAME", "District")
+
+district2 <- c("dakota","goodhue","scott","wabasha")
+
+dist2 <- data.frame(district2, 2)
+colnames(dist2) <- c("CTYNAME", "District")
+
+
+district3 <- c("benton", "sherburne", "wright")
+
+dist3 <- data.frame(district3, 3)
+colnames(dist3) <- c("CTYNAME", "District")
+
+
+district7 <- c("becker", "big stone", "chippewa", "clay","clearwater","douglas","grant",
+"kandiyohi", "kittson","lac qui parle","lake of the woods","lincoln","lyon","mahnomen","marshall","mcleod","meeker","murray","norman","otter tail","pennington","pipestone","polk","pope","red lake","redwood","renville","roseau","sibley","stevens","swift","todd","traverse","wilkin", "yellow medicine")
+
+dist7 <- data.frame(district7, 7)
+colnames(dist7) <- c("CTYNAME", "District")
+
+district8 <- c("aitkin", "carlton", "cass","chisago","cook","crow wing","hubbard","isanti","itasca","kanabec","koochiching","lake", "mille lacs","morrison", "pine","st. louis", "wadena")
+
+dist8 <- data.frame(district8, 8)
+colnames(dist8) <- c("CTYNAME", "District")
+
+
+
+district <- rbind(dist1, dist2, dist3, dist7, dist8)
+
+```
+
+
+```{r}
+predicted_data <- read_csv("~/jvstats/predicted_data2.csv")
+
+
+#predicted_data <-merge(predicted_data, district, by=c("CTYNAME"))
+
+predicted_data <- district %>%
+  left_join(predicted_data, by = c("CTYNAME")) %>%
+  dplyr::select(CTYNAME, `District`, `Vote_Number`)
+head(predicted_data)
+
+write.csv(predicted_data, "~/jvstats/normal_county.csv")
+
+
+```
+
+#Predict code
+```{r}
+model.a <- lmer(VOTEPERCENT ~ `BACHELOR'S DEGREE >25`+AGE2024_TOTAL +INCOME.HC01_EST_VC13 +
+  (1|CTYNAME), REML=T, data=final_county[final_county$MIDTERM==1,])
+summary(model.a)
+predict(model.a)
+```
+

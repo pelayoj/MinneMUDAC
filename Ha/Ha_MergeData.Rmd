@@ -1,0 +1,353 @@
+---
+title: "Cleaning and merging"
+author: "Ha Nguyen"
+date: "10/12/2018"
+output: html_document
+---
+
+```{r}
+library(readr)
+library(readxl)
+library(tidyverse)
+library(stringr)
+```
+
+## Voter turnout
+KEY variables: precinct name (PTCNAME), precinct code/ state precinct number (PCTCODE), county name(CTYNAME), county code (CTYCODE), voter turnout/ballot (TOTVOTERS), us congressional district (CONGDIST), year (YEAR)
+```{r}
+#2014
+turnout_pct_14.df <- read_xlsx("~/jvstats/VoterTurnout/Election_2014_Precinct.xlsx")
+YEAR = 2014
+turnout_pct_14.df <- cbind(turnout_pct_14.df, YEAR)
+colnames(turnout_pct_14.df)[c(2, 3, 5, 6,24 , 7)] <- c("PCTNAME", "PCTCODE", "CTYNAME", "CTYCODE", "TOTVOTERS", "CONGDIST")
+turnout_pct_14.df <- type_convert(turnout_pct_14.df)
+turnout_pct_14.df <- turnout_pct_14.df %>%
+  mutate(PCTCODE = as.numeric(PCTCODE))
+length(unique(turnout_pct_14.df$CTYNAME)) #check the number of counties and precincts
+length(unique(turnout_pct_14.df$PCTNAME))
+
+
+#2010
+turnout_pct_10.df <- read_excel("~/jvstats/VoterTurnout/Election_2010_Precinct.xls")
+YEAR = 2010
+turnout_pct_10.df <- cbind(turnout_pct_10.df, YEAR)
+turnout_pct_10.df$County[turnout_pct_10.df$County == "SAINT LOUIS"] <- "ST. LOUIS"
+colnames(turnout_pct_10.df)[c(1, 2, 10, 9, 20, 3)] <- c("PCTNAME", "PCTCODE", "CTYNAME", "CTYCODE", "TOTVOTERS", "CONGDIST")
+turnout_pct_10.df <- turnout_pct_10.df %>%
+  filter(!is.na(CTYNAME))
+length(unique(turnout_pct_10.df$CTYNAME)) #check the number of counties and precincts
+length(unique(turnout_pct_10.df$PCTNAME))
+
+
+#2006 
+#2006 doesn't have county name so we add county name in sheet 3 of the same excel file
+turnout_pct_06.df <- read_excel("~/jvstats/VoterTurnout/Election_2006_Precinct.xls")
+turnout_pct_06.df <- turnout_pct_06.df %>%
+  filter(!is.na(County_ID), County_ID != "County_ID")
+turnout_pct_06.df <- turnout_pct_06.df %>%
+  mutate(CC = as.numeric(County_ID))
+countyname06.df <- read_excel("~/jvstats/VoterTurnout/Election_2006_Precinct.xls", sheet = 3)
+turnout_pct_06.df <- merge(turnout_pct_06.df, countyname06.df, by=c("CC"))
+YEAR = 2006
+turnout_pct_06.df <- cbind(turnout_pct_06.df, YEAR)
+colnames(turnout_pct_06.df)[c(2, 11, 64, 1, 20, 4)] <- c("PCTNAME", "PCTCODE", "CTYNAME", "CTYCODE", "TOTVOTERS", "CONGDIST")
+turnout_pct_06.df <- turnout_pct_06.df %>%
+  mutate(PCTCODE = as.numeric(PCTCODE),
+         CTYCODE = as.numeric(CTYCODE),
+         TOTVOTERS = as.numeric(TOTVOTERS),
+         CONGDIST = as.numeric(CONGDIST))
+length(unique(turnout_pct_06.df$CTYNAME))
+
+
+#2002
+#2002 has many variables with candidate name (?), so these columns were filtered out.
+turnout_pct_02.df <- read_excel("~/jvstats/VoterTurnout/Election_2002_Precinct.xls", skip=2)
+turnout_pct_02.df <- type_convert(turnout_pct_02.df)
+turnout_pct_02.df <- turnout_pct_02.df %>%
+  select(1:76) %>%      
+  mutate(CC = as.numeric(CC))
+countyname02.df <- read_excel("~/jvstats/VoterTurnout/Election_2002_Precinct.xls", sheet = 3)
+turnout_pct_02.df <- merge(turnout_pct_02.df, countyname02.df, by=c("CC"))
+YEAR = 2002
+turnout_pct_02.df <- cbind(turnout_pct_02.df, YEAR)
+colnames(turnout_pct_02.df)[c(3, 17, 78, 1, 24, 5)] <- c("PCTNAME", "PCTCODE", "CTYNAME", "CTYCODE", "TOTVOTERS", "CONGDIST")
+turnout_pct_02.df <- turnout_pct_02.df %>%
+  mutate(PCTCODE = as.numeric(PCTCODE),
+         CTYCODE = as.numeric(CTYCODE),
+         TOTVOTERS = as.numeric(TOTVOTERS),
+         CONGDIST = as.numeric(CONGDIST))
+length(unique(turnout_pct_02.df$CTYNAME))
+
+
+#1998
+#No county name and congressional district
+turnout_pct_98.df <- read_excel("~/jvstats/VoterTurnout/Election_1998_Precinct.xls")
+YEAR = 1998
+turnout_pct_98.df <- cbind(turnout_pct_98.df, YEAR)
+colnames(turnout_pct_98.df)[c(2, 4, 8, 3)] <- c("PCTNAME", "PCTCODE","TOTVOTERS", "CTYCODE")
+turnout_pct_98.df <- turnout_pct_98.df %>%
+  mutate(PCTCODE = as.numeric(PCTCODE),
+         CTYCODE = as.numeric(CTYCODE),
+         TOTVOTERS = as.numeric(TOTVOTERS))
+
+
+#1994
+turnout_pct_94.df <- read_excel("~/jvstats/VoterTurnout/Election_1994_Precinct.xls")
+YEAR = 1994
+turnout_pct_94.df <- cbind(turnout_pct_94.df, YEAR)
+
+
+#Combine datasets (for 2014, 2010, 2006 and 2002 first)
+
+turnout_pct.df <- turnout_pct_14.df %>%
+  full_join(turnout_pct_10.df, by = c("PCTNAME", "PCTCODE", "CTYNAME", "CTYCODE", "TOTVOTERS", "CONGDIST", "YEAR")) %>%
+  full_join(turnout_pct_06.df, by = c("PCTNAME", "PCTCODE", "CTYNAME", "CTYCODE", "TOTVOTERS", "CONGDIST", "YEAR")) %>%
+  full_join(turnout_pct_02.df, by = c("PCTNAME", "PCTCODE", "CTYNAME", "CTYCODE", "TOTVOTERS", "CONGDIST", "YEAR")) %>%
+  select("PCTNAME", "PCTCODE", "CTYNAME", "CTYCODE", "TOTVOTERS", "CONGDIST", "YEAR") %>%
+  mutate(PCTNAME = str_to_lower(PCTNAME),
+         CTYNAME = str_to_lower(CTYNAME))
+head(turnout_pct.df)
+#may need to do some checking: counting the number of precinct by year/ county
+
+turnout_cty.df <- turnout_pct.df %>%
+  group_by(`CTYNAME`,`YEAR`, CTYCODE) %>%
+  summarise(
+    TOTVOTERS = sum(TOTVOTERS))
+head(turnout_cty.df)
+```
+
+## Cook's political report
+
+```{r}
+Cook.df <- read_csv("~/jvstats/CookCompetitiveness.csv")
+head(Cook.df)
+Cook1.df <- Cook.df %>%
+  select(-ReportDate) %>%
+  filter(OfficeName == "House Representative") %>%
+  mutate(HouseRep = Competitiveness) %>%
+  select(- OfficeName, - Competitiveness)
+
+Cook2.df <- Cook.df %>%
+  select(-ReportDate, - District) %>%
+  filter(OfficeName != "House Representative") %>%
+  spread(key = OfficeName, value = Competitiveness)
+
+Cook1.df <- rbind(Cook1.df, c(2014, 2, 0), c(2014, 3, 0), c(2014, 4, 0), c(2014, 5, 0), c(2014, 6, 0))
+Cook1.df <- rbind(Cook1.df, c(2018, 4, 0), c(2018, 5, 0), c(2018, 6, 0))
+
+Cook.df <- Cook1.df %>%
+  left_join(Cook2.df)
+head(Cook1.df)
+head(Cook2.df)
+colnames(Cook.df) <- c("YEAR", "CONGDIST", "COOK.HouseRep", "COOK.Governer", "COOK.Senate1", "COOK.Senate2")
+Cook.df <- Cook.df %>%
+  mutate(COOK.HouseRep = as.numeric(COOK.HouseRep),
+         COOK.Governer = as.numeric(COOK.Governer),
+         COOK.Senate1 = as.numeric(COOK.Senate1),
+         COOK.Senate2 = as.numeric(COOK.Senate2))
+```
+
+#County income estimate
+```{r}
+#2016 #let's ignore 2016 for now
+income_cty_16.df <- read_csv("~/jvstats/County Income Estimates/ACS_16_5YR_DP03_with_ann.csv", col_names = TRUE)
+income_cty_16.df <- income_cty_16.df %>%
+  filter(`GEO.display-label` != "Minnesota", `GEO.display-label` != "Geography") %>%
+  mutate(CTYNAME = str_sub(`GEO.display-label`, 1 , str_length(`GEO.display-label`) - 18))
+length(unique(income_cty_16.df$CTYNAME))
+ncol(income_cty_16.df)
+YEAR = 2016
+income_cty_16.df <- cbind(income_cty_16.df, YEAR)
+
+
+#2014
+income_cty_14.df <- read_csv("~/jvstats/County Income Estimates/ACS_14_5YR_S1901_with_ann.csv", col_names = TRUE)
+colnames(income_cty_14.df) <- str_c("INCOME.", colnames(income_cty_14.df)) 
+income_cty_14.df <- income_cty_14.df %>%
+  filter(`INCOME.GEO.display-label` != "Minnesota", `INCOME.GEO.display-label` != "Geography") %>%
+  mutate(CTYNAME = str_sub(`INCOME.GEO.display-label`, 1 , str_length(`INCOME.GEO.display-label`) - 18))
+length(unique(income_cty_14.df$CTYNAME))
+ncol(income_cty_14.df)
+YEAR = 2014
+income_cty_14.df <- cbind(income_cty_14.df, YEAR)
+
+
+#2012
+income_cty_12.df <- read_csv("~/jvstats/County Income Estimates/ACS_12_5YR_S1901_with_ann.csv", col_names = TRUE)
+income_cty_12.df <- income_cty_12.df %>%
+  filter(`GEO.display-label` != "Minnesota", `GEO.display-label` != "Geography") %>%
+  mutate(CTYNAME = str_sub(`GEO.display-label`, 1 , str_length(`GEO.display-label`) - 18))
+length(unique(income_cty_12.df$CTYNAME))
+ncol(income_cty_12.df)
+YEAR = 2012
+income_cty_12.df <- cbind(income_cty_12.df, YEAR)
+
+
+#2010
+income_cty_10.df <- read_csv("~/jvstats/County Income Estimates/ACS_10_5YR_S1901_with_ann.csv", col_names = TRUE)
+income_cty_10.df <- income_cty_10.df %>%
+  filter(`GEO.display-label` != "Minnesota", `GEO.display-label` != "Geography") %>%
+  mutate(CTYNAME = str_sub(`GEO.display-label`, 1 , str_length(`GEO.display-label`) - 18))
+length(unique(income_cty_10.df$CTYNAME))
+ncol(income_cty_10.df)
+YEAR = 2010
+income_cty_10.df <- cbind(income_cty_10.df, YEAR)
+
+
+#2008 #Why is there only 47 counties?
+income_cty_08.df <- read_csv("~/jvstats/County Income Estimates/ACS_08_3YR_S1901_with_ann.csv", col_names = TRUE)
+income_cty_08.df <- income_cty_08.df %>%
+  filter(`GEO.display-label` != "Minnesota", `GEO.display-label` != "Geography") %>%
+  mutate(CTYNAME = str_sub(`GEO.display-label`, 1 , str_length(`GEO.display-label`) - 18))
+length(unique(income_cty_08.df$CTYNAME))
+ncol(income_cty_08.df)
+YEAR = 2008
+income_cty_08.df <- cbind(income_cty_08.df, YEAR)
+
+
+#2006 #Why is there only 12 counties?
+income_cty_06.df <- read_csv("~/jvstats/County Income Estimates/ACS_06_EST_S1901_with_ann.csv", col_names = TRUE)
+income_cty_06.df <- income_cty_06.df %>%
+  filter(`GEO.display-label` != "Minnesota", `GEO.display-label` != "Geography") %>%
+  mutate(CTYNAME = str_sub(`GEO.display-label`, 1 , str_length(`GEO.display-label`) - 18))
+length(unique(income_cty_06.df$CTYNAME))
+ncol(income_cty_06.df)
+YEAR = 2006
+income_cty_06.df <- cbind(income_cty_06.df, YEAR)
+
+
+#check # 06 and 08 have the same variable name, 10 and 12 and 14 have the same variable name
+#colnames(income_cty_06.df) == colnames(income_cty_08.df)
+#colnames(income_cty_06.df) == colnames(income_cty_10.df)
+#colnames(income_cty_06.df) == colnames(income_cty_12.df)
+#colnames(income_cty_10.df) == colnames(income_cty_12.df)
+#colnames(income_cty_12.df) == colnames(income_cty_14.df)
+#colnames(income_cty_16.df) == colnames(income_cty_06.df)
+
+#looked through the dataset and the column name difference doesn't really matter
+
+#Combine datasets (except for 2016 because it has many more variables)
+colnames(income_cty_06.df) <- colnames(income_cty_14.df)
+colnames(income_cty_08.df) <- colnames(income_cty_14.df)
+colnames(income_cty_10.df) <- colnames(income_cty_14.df)
+colnames(income_cty_12.df) <- colnames(income_cty_14.df)
+
+income_cty.df <- income_cty_14.df %>%
+  rbind(income_cty_12.df) %>%
+  rbind(income_cty_10.df) %>%
+  rbind(income_cty_08.df) %>%
+  rbind(income_cty_06.df) %>%
+  mutate(CTYNAME = str_to_lower(CTYNAME),
+         YEAR = as.numeric(YEAR))
+head(income_cty.df)
+```
+#Social capital
+```{r}
+socialcap.df <- read_excel("~/jvstats/2014_SocialCapital.xlsx")
+colnames(socialcap.df) <- str_c("SOCIALCAP.", colnames(socialcap.df)) 
+socialcap.df <- socialcap.df %>%
+  filter(str_sub(SOCIALCAP.County_Name, -2, -1) == "MN") %>%
+  mutate(CTYNAME = str_to_lower(str_sub(SOCIALCAP.County_Name, 1 , str_length(SOCIALCAP.County_Name) - 11))) %>%
+  select(-SOCIALCAP.County_Name, -SOCIALCAP.FIPS)
+head(socialcap.df)
+```
+#House control
+```{r}
+housecontrol.df <- read_csv("~/jvstats/NEW_DATA/PARTISAN_CONTROL/CONTROL_HOUSE.csv")
+head(housecontrol.df)
+colnames(housecontrol.df) <- str_c("HOUSE.", colnames(housecontrol.df))
+housecontrol.df <- housecontrol.df %>%
+  mutate(YEAR = (as.numeric(str_sub(`HOUSE.Congress (Years)`, -5,-2)) + as.numeric(str_sub(`HOUSE.Congress (Years)`, -10,-7)))/2)
+head(housecontrol.df)
+```
+#Senate control
+```{r}
+senatecontrol.df <- read_csv("~/jvstats/NEW_DATA/PARTISAN_CONTROL/CONTROL_SENATE.csv")
+head(senatecontrol.df)
+colnames(senatecontrol.df) <- str_c("SENATE.", colnames(senatecontrol.df))
+head(senatecontrol.df)
+senatecontrol.df <- senatecontrol.df %>%
+  mutate(YEAR = (as.numeric(str_sub(`SENATE.Session`, -5,-2)) + as.numeric(str_sub(`SENATE.Session`, -10,-7)))/2)
+head(senatecontrol.df)
+```
+#State legislative
+```{r}
+statelegis.df <- read_csv("~/jvstats/NEW_DATA/PARTISAN_CONTROL/CONTROL_STATE_LEGISLATURE.csv")
+statelegis.df <- statelegis.df[c(1:9),]
+colnames(statelegis.df) <- str_c("STATELEGIS.", colnames(statelegis.df))
+
+statelegis.df <- statelegis.df %>%
+  mutate(YEAR = as.numeric(str_sub(`STATELEGIS.Session`, -4,-1)))
+head(statelegis.df)
+```
+
+#Merge everything
+```{r}
+main.df <- turnout_pct.df %>%
+  left_join(income_cty.df, by = c("YEAR", "CTYNAME")) %>%  #use code book of 2014
+  left_join(socialcap.df, by = c("CTYNAME")) %>%
+  left_join(housecontrol.df, by = c("YEAR")) %>%
+  left_join(senatecontrol.df, by = c("YEAR")) %>%
+  left_join(statelegis.df, by = c("YEAR"))
+main.df <- main.df %>%
+  left_join(Cook.df, by = c("YEAR", "CONGDIST"))
+head(main.df)
+#write_csv(main.df, "sampledata.csv")
+
+main2.df <- turnout_cty.df %>%
+  left_join(income_cty.df, by = c("YEAR", "CTYNAME")) %>%  #use code book of 2014
+  left_join(socialcap.df, by = c("CTYNAME")) %>%
+  left_join(housecontrol.df, by = c("YEAR")) %>%
+  left_join(senatecontrol.df, by = c("YEAR")) %>%
+  left_join(statelegis.df, by = c("YEAR"))
+
+```
+
+#Merge demographics data
+```{r}
+unemployment <- read_csv("~/jvstats/MYKHE/unemployment.csv")
+unemployment <- unemployment[, -1]
+race <- read_csv("~/jvstats/MYKHE/race.csv")
+race <- race[,-1]
+population <- read_csv("~/jvstats/MYKHE/population.csv")
+population <- population[,-1]
+marraige <- read_csv("~/jvstats/MYKHE/marraige.csv")
+marraige <- marraige[,-1] 
+education <- read_csv("~/jvstats/MYKHE/education.csv")
+education <- education[,-1]
+sexage <- read_csv("~/jvstats/MYKHE/sexage.csv")
+sexage <- sexage[,-1]
+citizen <- read_csv("~/jvstats/MYKHE/citizen.csv")
+citizen <- citizen[,-1]
+
+demographics.df <- unemployment %>%
+  left_join(race, by = c("CTYNAME", "YEAR")) %>%
+  left_join(population, by = c("CTYNAME", "YEAR")) %>%
+  left_join(marraige, by = c("CTYNAME", "YEAR")) %>%
+  left_join(education, by = c("CTYNAME", "YEAR")) %>%
+  left_join(sexage, by = c("CTYNAME", "YEAR")) %>%
+  left_join(citizen, by = c("CTYNAME", "YEAR"))
+
+head(demographics.df)
+demographics.df <- demographics.df %>%
+  mutate(CTYNAME = str_to_lower(str_sub(CTYNAME, 1, str_length(CTYNAME) - 18)))
+head(demographics.df)
+```
+
+#merge everything with demographics
+```{r}
+finaldataset <- main.df %>%
+  left_join(demographics.df, by=c("YEAR", "CTYNAME"))
+#write_csv(finaldataset, "finaldataset.csv")
+
+finaldataset.cty <- main2.df %>%
+  left_join(demographics.df, by=c("YEAR", "CTYNAME")) %>%
+  mutate(VOTEPERCENT = TOTVOTERS/POPULATION)
+
+#write_csv(finaldataset.cty, "finaldataset_cty.csv")
+
+
+#subdataset <- turnout_cty.df %>%
+#  left_join(demographics.df, by = c("YEAR", "CTYNAME"))
+#write_csv(subdataset, "~/jvstats/Ha/subdata.csv")
+```
